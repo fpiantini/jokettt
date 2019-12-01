@@ -19,16 +19,34 @@ from random import shuffle
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 class TttBoard:
-    def __init__(self, init_board = [['_', '_', '_'],
-                                     ['_', '_', '_'],
-                                     ['_', '_', '_']]):
+
+    # ------------------------------------------------------
+    def __init__(self, positive_piece, negative_piece,
+                 init_board = [['_', '_', '_'],
+                               ['_', '_', '_'],
+                               ['_', '_', '_']]):
+        self.__posPiece = positive_piece
+        self.__negPiece = negative_piece
         self.__board = init_board
         seed()
         self.__init_zhash()
 
+    # ------------------------------------------------------
+    def reset(self,
+              init_board = [['_', '_', '_'],
+                            ['_', '_', '_'],
+                            ['_', '_', '_']]):
+        for x in range(0, 3):
+            for y in range(0, 3):
+                self.__board[x][y] = init_board[x][y]
+        # initialize Zobrist hash value
+        self.__evaluate_zhash()
+
+    # ------------------------------------------------------
     def get_zhash(self):
         return self.__zobrist_hash
 
+    # ------------------------------------------------------
     def is_not_full(self):
         for x in range(0, 3):
             for y in range(0, 3):
@@ -36,18 +54,22 @@ class TttBoard:
                     return True
         return False
 
+    # ------------------------------------------------------
     def is_full(self):
         return not self.is_not_full()
 
+    # ------------------------------------------------------
     def pos_is_empty(self, x, y):
         if self.__board[x][y] == "_":
             return True
         else:
             return False
 
+    # ------------------------------------------------------
     def pos_is_busy(self, x, y):
         return not self.pos_is_empty(x, y)
 
+    # ------------------------------------------------------
     def valid_moves(self):
         move_list = []
         for x in range(0, 3):
@@ -56,12 +78,21 @@ class TttBoard:
                     move_list.append([x, y])
         return move_list
 
+    # ------------------------------------------------------
     def place_pawn(self, x, y, piece):
         if self.pos_is_empty(x, y):
             self.__board[x][y] = piece
             self.__update_zhash(x, y, piece)
-        return self.evaluate()
+        return self.get_zhash(), self.evaluate()
 
+    # ------------------------------------------------------
+    def remove_pawn(self, x, y):
+        piece = self.__board[x][y]
+        if piece != "_":
+            self.__update_zhash(x, y, piece)
+            self.__board[x][y] = "_"
+
+    # ------------------------------------------------------
     def evaluate(self):
         score = self.__evaluate_rows()
         if score != 0:
@@ -71,18 +102,13 @@ class TttBoard:
             return score
         return self.__evaluate_diags()
 
+    # ------------------------------------------------------
     def convert_move_to_indexes(self, move):
         row = move[0].upper()
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
 
-    def __str__(self):
-        return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
-            (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
-
-    def __repr__(self):
-        return 'TttBoard(%s)' % self.__board
-
+    # ------------------------------------------------------
     def __convert_move_coords_to_indexes(self, row, col):
         row_to_x = {
             "A": 0,
@@ -96,38 +122,42 @@ class TttBoard:
         }
         return row_to_x.get(row, -1), col_to_y.get(col, -1)
 
+    # ------------------------------------------------------
     def __evaluate_rows(self):
         for row in range(0, 3):
             if self.__board[row][0] == self.__board[row][1] and self.__board[row][1] == self.__board[row][2]:
-                if self.__board[row][0] == 'x':
+                if self.__board[row][0] == self.__posPiece:
                     return 10
-                elif self.__board[row][0] == 'o':
+                elif self.__board[row][0] == self.__negPiece:
                     return -10
         return 0
 
+    # ------------------------------------------------------
     def __evaluate_cols(self):
         for col in range(0, 3):
             if self.__board[0][col] == self.__board[1][col] and self.__board[1][col] == self.__board[2][col]:
-                if self.__board[0][col] == 'x':
+                if self.__board[0][col] == self.__posPiece:
                     return 10
-                elif self.__board[0][col] == 'o':
+                elif self.__board[0][col] == self.__negPiece:
                     return -10
         return 0
 
+    # ------------------------------------------------------
     def __evaluate_diags(self):
         if self.__board[0][0] == self.__board[1][1] and self.__board[1][1] == self.__board[2][2]:
-            if self.__board[1][1] == 'x':
+            if self.__board[1][1] == self.__posPiece:
                 return 10
-            elif self.__board[1][1] == 'o':
+            elif self.__board[1][1] == self.__negPiece:
                 return -10
 
         if self.__board[0][2] == self.__board[1][1] and self.__board[1][1] == self.__board[2][0]:
-            if self.__board[1][1] == 'x':
+            if self.__board[1][1] == self.__posPiece:
                 return 10
-            elif self.__board[1][1] == 'o':
+            elif self.__board[1][1] == self.__negPiece:
                 return -10
         return 0
 
+    # ------------------------------------------------------
     def __init_zhash(self):
         # initialize Zobrist hash table
         self.__zhash_table = np.empty([3,3,2], dtype=int)
@@ -135,6 +165,11 @@ class TttBoard:
             for y in range (0, 3):
                 for e in range (0, 2):
                     self.__zhash_table[x][y][e] = randint(0, sys.maxsize)
+        # initialize Zobrist hash value
+        self.__evaluate_zhash()
+
+    # ------------------------------------------------------
+    def __evaluate_zhash(self):
         # initialize Zobrist hash value
         self.__zobrist_hash = 0
         for x in range(0, 3):
@@ -144,19 +179,127 @@ class TttBoard:
                     piece_ndx = self.__convert_piece_in_index(piece)
                     self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
 
+    # ------------------------------------------------------
     def __update_zhash(self, x, y, piece):
         piece_ndx = self.__convert_piece_in_index(piece)
         self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
 
+    # ------------------------------------------------------
     def __convert_piece_in_index(self, piece):
-        if piece == 'x':
+        if piece == self.__posPiece:
             return 0
         return 1
+
+    # ------------------------------------------------------
+    def __str__(self):
+        return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
+            (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
+
+    # ------------------------------------------------------
+    def __repr__(self):
+        return 'TttBoard(%s)' % self.__board
+
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
-class TttAutoPlayer:
+class TttRLPlayer:
+    def __init__(self, board, alpha, piece):
+        self.__alpha = alpha
+        self.__piece = piece
+        self.__values = {}
+        zhash = board.get_zhash()
+        score = board.evaluate()
+        if score > 0:
+            # winning board...
+            self.__values[zhash] = 1.0
+        elif score < 0:
+            #losing board
+            self.__values[zhash] = 0.0
+        else:
+            # playable board
+            self.__values[zhash] = 0.5
+        self.__last_zhash = zhash
+        return
+
+    def get_piece(self):
+        return self.__piece
+
+    def move(self, board):
+        self.__x = None
+        self.__y = None
+        # apply reinforcement learning
+        score, self.__x, self.__y = self.__find_rl_move(board)
+        return self.__x, self.__y
+
+
+    def __find_rl_move(self, board):
+
+        current_zhash = board.get_zhash()
+        if not current_zhash in self.__values:
+            # this means that opponent has moved
+            self.__values[current_zhash] = 0.5
+
+        move_list = board.valid_moves()
+        shuffle(move_list)  # to add some variability to the play (...maybe)
+        best_value = -1000
+        best_score = -1000
+        for move in move_list:
+            zhash, score = board.place_pawn(move[0], move[1], self.__piece)
+            board.remove_pawn(move[0], move[1])
+            if score > 0:
+                # we win! choose this move
+                self.__values[zhash] = 1.0
+                best_zhash = zhash
+                best_value = self.__values[zhash]
+                best_x, best_y = move
+                best_score = score
+                break
+            elif score < 0:
+                # we lose... try do not select this move
+                # updates values table in any case
+                self.__values[zhash] = 0.0
+            else:
+                # neutral move... if the hash is not in dictionary
+                # this is the first time we encounter this move:
+                # initialize value
+                if not zhash in self.__values:
+                    self.__values[zhash] = 0.5
+
+            # if here the move is not winning...
+            # checks if it is good and continue
+            if best_value < self.__values[zhash]:
+                best_zhash = zhash
+                best_value = self.__values[zhash]
+                best_x, best_y = move
+                best_score = score
+
+        # move selected... updates current zhash
+        self.__values[current_zhash] += \
+            self.__alpha * (self.__values[best_zhash] - \
+                            self.__values[current_zhash])
+
+        self.__last_zhash = best_zhash
+        print(self.__values)
+        return best_score, best_x, best_y
+
+    def learn_from_defeat(self, board):
+        current_zhash = board.get_zhash()
+        score = board.evaluate() # this should be negative...
+        if score < 0:            # so this check is useless...
+            # defeat...
+            self.__values[current_zhash] = 0.0
+            self.__values[self.__last_zhash] += \
+            self.__alpha * (self.__values[current_zhash] - \
+                            self.__values[self.__last_zhash])
+            print(self.__values)
+
+
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+class TttMinimaxPlayer:
     def __init__(self, dumb_mode):
         self.set_dumb_mode(dumb_mode)
 
@@ -209,7 +352,7 @@ class TttAutoPlayer:
             best_score = -1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                simul_board.place_pawn(move[0], move[1], "x")
+                simul_board.place_pawn(move[0], move[1], 'x')
                 score, x, y = self.__find_move_minimax(simul_board, depth+1, False, alpha, beta)
                 if score > best_score:
                     best_score = score
@@ -222,7 +365,7 @@ class TttAutoPlayer:
             best_score = 1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                simul_board.place_pawn(move[0], move[1], "o")
+                simul_board.place_pawn(move[0], move[1], 'o')
                 score, x, y = self.__find_move_minimax(simul_board, depth+1, True, alpha, beta)
                 if score < best_score:
                     best_score = score
@@ -234,13 +377,15 @@ class TttAutoPlayer:
 
         return best_score, best_x, best_y
 
-
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 class TttTtyPlayer:
-    def __init__(self):
-        return
+    def __init__(self, piece):
+        self.__piece = piece
+
+    def get_piece(self):
+        return self.__piece
 
     def move(self, board):
         while True:
@@ -262,47 +407,45 @@ class TttTtyPlayer:
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
+def play_a_game(p1, p2, board):
+    result = 0
+    print("----------------------------------------------------")
+    print("  --- NEW GAME ---")
+    p1_turn = True
+    while result == 0 and board.is_not_full():
+
+        print('%s' % board)
+        if p1_turn:
+            x, y = p1.move(board)
+            zhash, result = board.place_pawn(x, y, p1.get_piece())
+        else:
+            x, y = p2.move(board)
+            zhash, result = board.place_pawn(x, y, p2.get_piece())
+
+        p1_turn = not p1_turn
+
+    print('%s' % board)
+    if (result > 0):
+        print("You lose! :-D")
+    elif (result < 0):
+        p2.learn_from_defeat(board)
+        print("You win!! :-(")
+    else:
+        print("Draw! ;-)")
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 #   ***  MAIN ***
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
-board = TttBoard()
-autoPlayer = TttAutoPlayer(True)
-ttyPlayer = TttTtyPlayer()
-result = 0
-first_turn_to_engine = True
+board = TttBoard('x', 'o')
+#mmPlayer = TttMinimaxPlayer(True)
+rlPlayer = TttRLPlayer(board, 0.1, 'x')
+ttyPlayer = TttTtyPlayer('o')
+while True:
+    board.reset()
+    play_a_game(ttyPlayer, rlPlayer, board)
 
-first_move = input("Do you want to do first move? [y/N] ")
-if first_move.upper() == "Y":
-    first_turn_to_engine = False
-
-if first_turn_to_engine:
-    # first turn for computer... generates random move
-    print("I move first... my move:")
-    x, y = autoPlayer.move(board)
-    result = board.place_pawn(x, y, "x")
-
-autoPlayer.set_dumb_mode(False)
-player_turn = True
-
-while result == 0 and board.is_not_full():
-
-    print('%s' % board)
-    if player_turn:
-        x, y = ttyPlayer.move(board)
-        result = board.place_pawn(x, y, 'o')
-    else:
-        x, y = autoPlayer.move(board)
-        result = board.place_pawn(x, y, 'x')
-
-    player_turn = not player_turn
-
-print('%s' % board)
-if (result > 0):
-    print("You lose! :-D")
-elif (result < 0):
-    print("You win!! :-(")
-else:
-    print("Draw! ;-)")
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
