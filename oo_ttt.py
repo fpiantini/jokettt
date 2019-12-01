@@ -4,7 +4,10 @@
 # Minimax algo applied to TicTacToe game
 # --- object oriented refactoring ---
 # --- with alpha-beta-pruning
+# --- with (Zobrist) hash evaluation function
 #
+import sys
+import numpy as np
 
 from copy import deepcopy, copy
 
@@ -21,9 +24,10 @@ class TttBoard:
                                      ['_', '_', '_']]):
         self.__board = init_board
         seed()
+        self.__init_zhash()
 
-    def get_board(self):
-        return self.__board
+    def get_zhash(self):
+        return self.__zobrist_hash
 
     def is_not_full(self):
         for x in range(0, 3):
@@ -52,9 +56,10 @@ class TttBoard:
                     move_list.append([x, y])
         return move_list
 
-    def place_pawn(self, x, y, type):
+    def place_pawn(self, x, y, piece):
         if self.pos_is_empty(x, y):
-            self.__board[x][y] = type
+            self.__board[x][y] = piece
+            self.__update_zhash(x, y, piece)
         return self.evaluate()
 
     def evaluate(self):
@@ -71,11 +76,13 @@ class TttBoard:
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
 
-    def pretty_print(self):
+    def pretty_print(self, print_zhash = False):
         print("     1    2    3")
         print("A ", self.__board[0])
         print("B ", self.__board[1])
         print("C ", self.__board[2])
+        if print_zhash:
+            print("--- hash = ", self.get_zhash())
 
     def __convert_move_coords_to_indexes(self, row, col):
         row_to_x = {
@@ -121,6 +128,31 @@ class TttBoard:
             elif self.__board[1][1] == 'o':
                 return -10
         return 0
+
+    def __init_zhash(self):
+        # initialize Zobrist hash table
+        self.__zhash_table = np.empty([3,3,2], dtype=int)
+        for x in range(0, 3):
+            for y in range (0, 3):
+                for e in range (0, 2):
+                    self.__zhash_table[x][y][e] = randint(0, sys.maxsize)
+        # initialize Zobrist hash value
+        self.__zobrist_hash = 0
+        for x in range(0, 3):
+            for y in range(0, 3):
+                piece = self.__board[x][y]
+                if piece != "_":
+                    piece_ndx = self.__convert_piece_in_index(piece)
+                    self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
+
+    def __update_zhash(self, x, y, piece):
+        piece_ndx = self.__convert_piece_in_index(piece)
+        self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
+
+    def __convert_piece_in_index(self, piece):
+        if piece == 'x':
+            return 0
+        return 1
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -191,7 +223,6 @@ class TttAutoPlayer:
             best_score = 1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                #simul_board = TttBoard(board.get_board())
                 simul_board.place_pawn(move[0], move[1], "o")
                 score, x, y = self.__find_move_minimax(simul_board, depth+1, True, alpha, beta)
                 if score < best_score:
@@ -256,7 +287,7 @@ player_turn = True
 
 while result == 0 and board.is_not_full():
 
-    board.pretty_print()
+    board.pretty_print(True)
     if player_turn:
         x, y = ttyPlayer.move(board)
         result = board.place_pawn(x, y, 'o')
@@ -266,7 +297,7 @@ while result == 0 and board.is_not_full():
 
     player_turn = not player_turn
 
-board.pretty_print()
+board.pretty_print(True)
 if (result > 0):
     print("You lose! :-D")
 elif (result < 0):
