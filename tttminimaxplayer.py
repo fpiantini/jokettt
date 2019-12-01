@@ -64,7 +64,11 @@ class TttMinimaxPlayer(TttPlayer):
 
     # ----------------------------------------------------------------------------------------
     def __move_smart(self, board):
-        """Do a smart move (using minimax algo)"""
+        """Do a smart move (using minimax algo). If this is the first move,
+            performs a random move using dumb mode"""
+        if board.is_empty():
+            return self.__move_dumb(board)
+
         _, best_x, best_y = self.__find_move_minimax(board, MinimaxParameters(0, True, -1000, 1000))
         return best_x, best_y
 
