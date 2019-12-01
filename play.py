@@ -28,16 +28,17 @@ def play_human_vs_ai_game(human_player, ai_player, auto_player_first, board):
         else:
             _x, _y = ai_player.move(board)
             _, result = board.place_pawn(_x, _y, ai_player.piece)
+            result = -result
 
         print('%s' % board)
         console_player_turn = not console_player_turn
 
     print('%s' % board)
 
-    if result > 0:
+    if result < 0:
         # AI player wins
         return -1
-    if result < 0:
+    if result > 0:
         # Human wins
         if isinstance(ai_player, TttLearnerPlayer):
             ai_player.learn_from_defeat(board)
@@ -50,6 +51,8 @@ def play_human_vs_ai_game(human_player, ai_player, auto_player_first, board):
 #   ***  MAIN ***
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
+AI_PIECE = 'x'
+HUMAN_PIECE = 'o'
 def main():
     """Main program: parses options, declare board and players, and
         plays a series of games"""
@@ -67,13 +70,13 @@ def main():
 
     print("TYPE OF AI PLAYER = {}".format(args.player_mode))
 
-    board = TttBoard('x', 'o')
+    board = TttBoard(AI_PIECE, HUMAN_PIECE)
     if args.player_mode == "minimax":
-        auto_player = TttMinimaxPlayer('x')
+        auto_player = TttMinimaxPlayer(AI_PIECE)
     else:
-        auto_player = TttLearnerPlayer('x', board)
+        auto_player = TttLearnerPlayer(AI_PIECE, board)
 
-    console_player = TttConsolePlayer('o')
+    console_player = TttConsolePlayer(HUMAN_PIECE)
 
     while True:
         board.reset()

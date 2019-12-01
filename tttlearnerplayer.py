@@ -27,7 +27,7 @@ class TttLearnerPlayer(TttPlayer):
         self.__alpha = alpha
         self.__values = {}
         zhash = board.get_zhash()
-        score = board.evaluate()
+        score = board.evaluate(self.piece)
         if score > 0:
             # winning board...
             self.__values[zhash] = 1.0
@@ -88,17 +88,17 @@ class TttLearnerPlayer(TttPlayer):
                             self.__values[current_zhash])
 
         self.__last_zhash = best_zhash
-        print(self.__values)
+        ###print(self.__values)
         return best_x, best_y
 
     def learn_from_defeat(self, board):
         """Updates the value vector given a final lost position"""
         current_zhash = board.get_zhash()
-        score = board.evaluate() # this should be negative...
+        score = board.evaluate(self.piece) # this should be negative...
         if score < 0:            # so this check is useless...
             # defeat...
             self.__values[current_zhash] = 0.0
             self.__values[self.__last_zhash] += \
             self.__alpha * (self.__values[current_zhash] - \
                             self.__values[self.__last_zhash])
-            print(self.__values)
+            ###print(self.__values)

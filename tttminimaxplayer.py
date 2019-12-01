@@ -67,8 +67,10 @@ class TttMinimaxPlayer(TttPlayer):
         """Do a smart move (using minimax algo). If this is the first move,
             performs a random move using dumb mode"""
         if board.is_empty():
+            ###print("I'm smart, but this is first move... choose random move")
             return self.__move_dumb(board)
 
+        ###print("I'm smart, choose best move")
         _, best_x, best_y = self.__find_move_minimax(board, MinimaxParameters(0, True, -1000, 1000))
         return best_x, best_y
 
@@ -77,7 +79,7 @@ class TttMinimaxPlayer(TttPlayer):
         """Find the best move (or one of the best) using the minimax algo"""
         best_x = None
         best_y = None
-        val = board.evaluate()
+        val = board.evaluate(self.piece)
         if val != 0 or board.is_full():
             # evaluate function returns a positive value
             # if maximizer win, a negative value otherwise
@@ -91,7 +93,7 @@ class TttMinimaxPlayer(TttPlayer):
             best_score = -1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                simul_board.place_pawn(move[0], move[1], 'x')
+                simul_board.place_pawn(move[0], move[1], self.piece)
                 score, _, _ = self.__find_move_minimax(simul_board, \
                        MinimaxParameters(mm_par.depth+1, False, mm_par.alpha, mm_par.beta))
                 if score > best_score:
@@ -105,7 +107,7 @@ class TttMinimaxPlayer(TttPlayer):
             best_score = 1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                simul_board.place_pawn(move[0], move[1], 'o')
+                simul_board.place_pawn(move[0], move[1], self.other_piece)
                 score, _, _ = self.__find_move_minimax(simul_board, \
                        MinimaxParameters(mm_par.depth+1, True, mm_par.alpha, mm_par.beta))
                 if score < best_score:
@@ -122,6 +124,7 @@ class TttMinimaxPlayer(TttPlayer):
     @staticmethod
     def __move_dumb(board):
         """Do a dumb move"""
+        ###print("I'm dumb, choose random move")
         if board.is_full():
             return None, None
         while True:

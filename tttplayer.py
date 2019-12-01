@@ -18,6 +18,11 @@ class TttPlayer(ABC):
     def __init__(self, piece):
         """TttPlayer class constructor. Just save the given piece."""
         self.piece = piece
+        if piece == "x":
+            self.other_piece = "o"
+        else:
+            self.other_piece = "x"
+
         ABC.__init__(self)
 
     @abstractmethod

@@ -15,7 +15,7 @@ import numpy as np
 class TttBoard:
     """A board to play Tic Tac Toe game."""
     # ------------------------------------------------------
-    def __init__(self, positive_piece, negative_piece, init_board=None):
+    def __init__(self, first_piece, second_piece, init_board=None):
 
         """TttBoard class constructor"""
         if init_board is not None:
@@ -25,8 +25,8 @@ class TttBoard:
                             ['_', '_', '_'],
                             ['_', '_', '_']]
 
-        self.__pos_piece = positive_piece
-        self.__neg_piece = negative_piece
+        self.__first_piece = first_piece
+        self.__second_piece = second_piece
         seed()
         self.__zobrist_hash = 0
         self.__init_zhash()
@@ -116,7 +116,7 @@ class TttBoard:
         if self.pos_is_empty(_x, _y):
             self.__board[_x][_y] = piece
             self.__update_zhash(_x, _y, piece)
-        return self.get_zhash(), self.evaluate()
+        return self.get_zhash(), self.evaluate(piece)
 
     # ------------------------------------------------------
     def remove_pawn(self, _x, _y):
@@ -127,15 +127,16 @@ class TttBoard:
             self.__board[_x][_y] = "_"
 
     # ------------------------------------------------------
-    def evaluate(self):
+    def evaluate(self, piece):
         """Evaluates the board value."""
-        score = self.__evaluate_rows()
+        neg_piece = self.__get_other_piece(piece)
+        score = self.__evaluate_rows(piece, neg_piece)
         if score != 0:
             return score
-        score = self.__evaluate_cols()
+        score = self.__evaluate_cols(piece, neg_piece)
         if score != 0:
             return score
-        return self.__evaluate_diags()
+        return self.__evaluate_diags(piece, neg_piece)
 
     # ------------------------------------------------------
     def convert_move_to_indexes(self, move):
@@ -161,46 +162,46 @@ class TttBoard:
         return row_to_x.get(row, -1), col_to_y.get(col, -1)
 
     # ------------------------------------------------------
-    def __evaluate_rows(self):
+    def __evaluate_rows(self, pos_piece, neg_piece):
         """Evaluates the board value checking only rows."""
         val = 0
         row = 0
         while val == 0 and row < 3:
             if self.__board[row][0] == self.__board[row][1] and \
                     self.__board[row][1] == self.__board[row][2]:
-                if self.__board[row][0] == self.__pos_piece:
+                if self.__board[row][0] == pos_piece:
                     val = 10
-                elif self.__board[row][0] == self.__neg_piece:
+                elif self.__board[row][0] == neg_piece:
                     val = -10
             row += 1
 
         return val
 
     # ------------------------------------------------------
-    def __evaluate_cols(self):
+    def __evaluate_cols(self, pos_piece, neg_piece):
         """Evaluates the board value checking only columns."""
         val = 0
         col = 0
         while val == 0 and col < 3:
             if self.__board[0][col] == self.__board[1][col] and \
                self.__board[1][col] == self.__board[2][col]:
-                if self.__board[0][col] == self.__pos_piece:
+                if self.__board[0][col] == pos_piece:
                     val = 10
-                elif self.__board[0][col] == self.__neg_piece:
+                elif self.__board[0][col] == neg_piece:
                     val = -10
             col += 1
 
         return val
 
     # ------------------------------------------------------
-    def __evaluate_diags(self):
+    def __evaluate_diags(self, pos_piece, neg_piece):
         """Evaluates the board value checking only diagonals."""
         val = 0
         if self.__board[0][0] == self.__board[1][1] and \
            self.__board[1][1] == self.__board[2][2]:
-            if self.__board[1][1] == self.__pos_piece:
+            if self.__board[1][1] == pos_piece:
                 val = 10
-            elif self.__board[1][1] == self.__neg_piece:
+            elif self.__board[1][1] == neg_piece:
                 val = -10
 
         if val != 0:
@@ -208,9 +209,9 @@ class TttBoard:
 
         if self.__board[0][2] == self.__board[1][1] and \
            self.__board[1][1] == self.__board[2][0]:
-            if self.__board[1][1] == self.__pos_piece:
+            if self.__board[1][1] == pos_piece:
                 val = 10
-            elif self.__board[1][1] == self.__neg_piece:
+            elif self.__board[1][1] == neg_piece:
                 val = -10
 
         return val
@@ -249,16 +250,22 @@ class TttBoard:
     # ------------------------------------------------------
     def __convert_piece_in_index(self, piece):
         """Convert a piece in internal index."""
-        if piece == self.__pos_piece:
+        if piece == self.__first_piece:
             return 0
         return 1
+
+    # ------------------------------------------------------
+    def __get_other_piece(self, piece):
+        if piece == self.__first_piece:
+            return self.__second_piece
+        return self.__first_piece
 
     # ------------------------------------------------------
     def __str__(self):
         """__str__ display of the board."""
         ###return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
         ###    (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
-        return '     1    2    3\nA %r\nB %r\nC %r\n' % \
+        return '    1    2    3\nA %r\nB %r\nC %r\n' % \
             (self.__board[0], self.__board[1], self.__board[2])
 
     # ------------------------------------------------------
