@@ -149,12 +149,12 @@ class TttAutoPlayer:
     def __move_smart(self, board):
         # apply minimax...
         #print(".....called __move_smart()")
-        score, best_x, best_y = self.__find_move_minimax(board, 0, True)
+        score, best_x, best_y = self.__find_move_minimax(board, 0, True, -1000, 1000)
         self.__x = best_x
         self.__y = best_y
         return
 
-    def __find_move_minimax(self, board, depth, is_maximizer):
+    def __find_move_minimax(self, board, depth, is_maximizer, alpha, beta):
         best_x = None
         best_y = None
         val = board.evaluate()
@@ -172,24 +172,30 @@ class TttAutoPlayer:
             best_score = -1000
             for move in move_list:
                 simul_board = deepcopy(board)
-                #simul_board = TttBoard(board.get_board())
                 simul_board.place_pawn(move[0], move[1], "x")
-                score, x, y = self.__find_move_minimax(simul_board, depth+1, False)
+                score, x, y = self.__find_move_minimax(simul_board, depth+1, False, alpha, beta)
                 if score > best_score:
                     best_score = score
                     best_x = move[0]
                     best_y = move[1]
+                alpha = max(alpha, best_score)
+                if beta <= alpha:
+                    break
         else:
             best_score = 1000
             for move in move_list:
                 simul_board = deepcopy(board)
                 #simul_board = TttBoard(board.get_board())
                 simul_board.place_pawn(move[0], move[1], "o")
-                score, x, y = self.__find_move_minimax(simul_board, depth+1, True)
+                score, x, y = self.__find_move_minimax(simul_board, depth+1, True, alpha, beta)
                 if score < best_score:
                     best_score = score
                     best_x = move[0]
                     best_y = move[1]
+                beta = min(beta, best_score)
+                if beta <= alpha:
+                    break
+
         return best_score, best_x, best_y
 
 
