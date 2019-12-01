@@ -10,7 +10,7 @@ The project has been tested only with python3 on Ubuntu Linux. If you have pytho
 ./play.py
 ```
 
-To avoid the usual problems with messy Python configurations (python 2 vs. 3, packages to install, etc.), I use conda during development.
+To avoid the usual problems with messy Python configurations (python 2 vs. 3, packages to install, etc.), conda is used for development.
 
 For those that wants to do the same and does not know conda, this is a a quick reference:
 
@@ -23,10 +23,16 @@ If you have conda installed, enter the project directory (the one with the envir
 conda env create
 ```
 
-Then activate the jokettt conda environment with the command:
+This shall be done only the one time. After this the ```jokettt``` conda environment is created. It can be activated with the command:
 
 ```bash
 conda activate jokettt
+```
+
+To update the conda environment every time that the ```environment.yml``` is changed, enter the command:
+
+```bash
+conda env update
 ```
 
 ## Credits
