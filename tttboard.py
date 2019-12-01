@@ -16,26 +16,35 @@ import numpy as np
 class TttBoard:
     """A board to play Tic Tac Toe game."""
     # ------------------------------------------------------
-    def __init__(self, positive_piece, negative_piece,
-                 init_board=[['_', '_', '_'],
-                             ['_', '_', '_'],
-                             ['_', '_', '_']]):
+    def __init__(self, positive_piece, negative_piece, init_board=None):
+
+        """TttBoard class constructor"""
+        if init_board is not None:
+            self.__board = init_board
+        else:
+            self.__board = [['_', '_', '_'],
+                            ['_', '_', '_'],
+                            ['_', '_', '_']]
+
         self.__pos_piece = positive_piece
         self.__neg_piece = negative_piece
-        self.__board = init_board
         seed()
         self.__zobrist_hash = 0
         self.__init_zhash()
 
     # ------------------------------------------------------
-    def reset(self,
-              init_board=[['_', '_', '_'],
-                          ['_', '_', '_'],
-                          ['_', '_', '_']]):
+    def reset(self, init_board=None):
+
         """Reset the board to the given schema (default = empty)."""
-        for _x in range(0, 3):
-            for _y in range(0, 3):
-                self.__board[_x][_y] = init_board[_x][_y]
+        if init_board is not None:
+            for _x in range(0, 3):
+                for _y in range(0, 3):
+                    self.__board[_x][_y] = init_board[_x][_y]
+        else:
+            self.__board = [['_', '_', '_'],
+                            ['_', '_', '_'],
+                            ['_', '_', '_']]
+
         # initialize Zobrist hash value
         self.__evaluate_zhash()
 
@@ -145,44 +154,57 @@ class TttBoard:
     # ------------------------------------------------------
     def __evaluate_rows(self):
         """Evaluates the board value checking only rows."""
-        for row in range(0, 3):
+        val = 0
+        row = 0
+        while val == 0 and row < 3:
             if self.__board[row][0] == self.__board[row][1] and \
                     self.__board[row][1] == self.__board[row][2]:
                 if self.__board[row][0] == self.__pos_piece:
-                    return 10
+                    val = 10
                 elif self.__board[row][0] == self.__neg_piece:
-                    return -10
-        return 0
+                    val = -10
+            row += 1
+
+        return val
 
     # ------------------------------------------------------
     def __evaluate_cols(self):
         """Evaluates the board value checking only columns."""
-        for col in range(0, 3):
+        val = 0
+        col = 0
+        while val == 0 and col < 3:
             if self.__board[0][col] == self.__board[1][col] and \
                self.__board[1][col] == self.__board[2][col]:
                 if self.__board[0][col] == self.__pos_piece:
-                    return 10
+                    val = 10
                 elif self.__board[0][col] == self.__neg_piece:
-                    return -10
-        return 0
+                    val = -10
+            col += 1
+
+        return val
 
     # ------------------------------------------------------
     def __evaluate_diags(self):
         """Evaluates the board value checking only diagonals."""
+        val = 0
         if self.__board[0][0] == self.__board[1][1] and \
            self.__board[1][1] == self.__board[2][2]:
             if self.__board[1][1] == self.__pos_piece:
-                return 10
+                val = 10
             elif self.__board[1][1] == self.__neg_piece:
-                return -10
+                val = -10
+
+        if val != 0:
+            return val
 
         if self.__board[0][2] == self.__board[1][1] and \
            self.__board[1][1] == self.__board[2][0]:
             if self.__board[1][1] == self.__pos_piece:
-                return 10
+                val = 10
             elif self.__board[1][1] == self.__neg_piece:
-                return -10
-        return 0
+                val = -10
+
+        return val
 
     # ------------------------------------------------------
     def __init_zhash(self):
@@ -225,8 +247,10 @@ class TttBoard:
     # ------------------------------------------------------
     def __str__(self):
         """__str__ display of the board."""
-        return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
-            (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
+        ###return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
+        ###    (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
+        return '     1    2    3\nA %r\nB %r\nC %r\n' % \
+            (self.__board[0], self.__board[1], self.__board[2])
 
     # ------------------------------------------------------
     def __repr__(self):
