@@ -1,0 +1,5 @@
+name: jokettt
+dependencies:
+- python=3
+- pylint
+- numpy
