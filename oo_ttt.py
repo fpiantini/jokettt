@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-2-evaluation-function/
+#
+# Minimax algo applied to TicTacToe game
+# --- object oriented refactoring ---
+# --- with alpha-beta-pruning
+#
 
 from copy import deepcopy, copy
 
