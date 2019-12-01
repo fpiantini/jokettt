@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from random import seed
 from random import randint
@@ -10,11 +10,14 @@ from random import shuffle
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 class TttBoard:
-    def __init__(self):
-        self.__board = [['_', '_', '_'],
-                        ['_', '_', '_'],
-                        ['_', '_', '_']]
+    def __init__(self, init_board = [['_', '_', '_'],
+                                     ['_', '_', '_'],
+                                     ['_', '_', '_']]):
+        self.__board = init_board
         seed()
+
+    def get_board(self):
+        return self.__board
 
     def is_not_full(self):
         for x in range(0, 3):
@@ -48,10 +51,25 @@ class TttBoard:
             self.__board[x][y] = type
         return self.evaluate()
 
+    def evaluate(self):
+        score = self.__evaluate_rows()
+        if score != 0:
+            return score
+        score = self.__evaluate_cols()
+        if score != 0:
+            return score
+        return self.__evaluate_diags()
+
     def convert_move_to_indexes(self, move):
         row = move[0].upper()
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
+
+    def pretty_print(self):
+        print("     1    2    3")
+        print("A ", self.__board[0])
+        print("B ", self.__board[1])
+        print("C ", self.__board[2])
 
     def __convert_move_coords_to_indexes(self, row, col):
         row_to_x = {
@@ -65,15 +83,6 @@ class TttBoard:
             "3": 2
         }
         return row_to_x.get(row, -1), col_to_y.get(col, -1)
-
-    def evaluate(self):
-        score = self.__evaluate_rows()
-        if score != 0:
-            return score
-        score = self.__evaluate_cols()
-        if score != 0:
-            return score
-        return self.__evaluate_diags()
 
     def __evaluate_rows(self):
         for row in range(0, 3):
@@ -107,12 +116,6 @@ class TttBoard:
                 return -10
         return 0
 
-    def pretty_print(self):
-        print("     1    2    3")
-        print("A ", self.__board[0])
-        print("B ", self.__board[1])
-        print("C ", self.__board[2])
-
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -145,8 +148,10 @@ class TttAutoPlayer:
 
     def __move_smart(self, board):
         # apply minimax...
-        print(".....called __move_smart()")
-        score = self.__find_move_minimax(board, 0, True)
+        #print(".....called __move_smart()")
+        score, best_x, best_y = self.__find_move_minimax(board, 0, True)
+        self.__x = best_x
+        self.__y = best_y
         return
 
     def __find_move_minimax(self, board, depth, is_maximizer):
@@ -157,9 +162,9 @@ class TttAutoPlayer:
             # evaluate function returns a positive value
             # if maximizer win, a negative value otherwise
             if val > 0:
-                return val - depth
+                return val - depth, best_x, best_y
             else:
-                return val + depth
+                return val + depth, best_x, best_y
 
         move_list = board.valid_moves()
         shuffle(move_list)  # to add some variability to the play (...maybe)
@@ -167,23 +172,25 @@ class TttAutoPlayer:
             best_score = -1000
             for move in move_list:
                 simul_board = deepcopy(board)
+                #simul_board = TttBoard(board.get_board())
                 simul_board.place_pawn(move[0], move[1], "x")
-                score = self.__find_move_minimax(simul_board, depth+1, False)
+                score, x, y = self.__find_move_minimax(simul_board, depth+1, False)
                 if score > best_score:
                     best_score = score
-                    self.__x = move[0]
-                    self.__y = move[1]
+                    best_x = move[0]
+                    best_y = move[1]
         else:
             best_score = 1000
             for move in move_list:
                 simul_board = deepcopy(board)
+                #simul_board = TttBoard(board.get_board())
                 simul_board.place_pawn(move[0], move[1], "o")
-                score = self.__find_move_minimax(simul_board, depth+1, True)
+                score, x, y = self.__find_move_minimax(simul_board, depth+1, True)
                 if score < best_score:
                     best_score = score
-                    self.__x = move[0]
-                    self.__y = move[1]
-        return best_score
+                    best_x = move[0]
+                    best_y = move[1]
+        return best_score, best_x, best_y
 
 
 # --------------------------------------------------------------------
