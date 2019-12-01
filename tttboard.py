@@ -53,8 +53,18 @@ class TttBoard:
         return self.__zobrist_hash
 
     # ------------------------------------------------------
+    def is_empty(self):
+        """Returns True if the board is empty"""
+        if self.__board == [['_', '_', '_'],
+                            ['_', '_', '_'],
+                            ['_', '_', '_']]:
+            return True
+
+        return False
+
+    # ------------------------------------------------------
     def is_not_full(self):
-        """Returns true if the board is not full."""
+        """Returns True if the board is not full."""
         for _x in range(0, 3):
             for _y in range(0, 3):
                 if self.__board[_x][_y] == "_":
@@ -63,17 +73,17 @@ class TttBoard:
 
     # ------------------------------------------------------
     def is_full(self):
-        """Returns true if the board is full."""
+        """Returns True if the board is full."""
         return not self.is_not_full()
 
     # ------------------------------------------------------
     def pos_is_empty(self, _x, _y):
-        """Returns true if the given board position does not contains a pawn."""
+        """Returns True if the given board position does not contains a pawn."""
         return bool(self.__board[_x][_y] == "_")
 
     # ------------------------------------------------------
     def pos_is_busy(self, _x, _y):
-        """Returns true if the given board position contains a pawn."""
+        """Returns True if the given board position contains a pawn."""
         return not self.pos_is_empty(_x, _y)
 
     # ------------------------------------------------------
@@ -88,7 +98,7 @@ class TttBoard:
 
     # ------------------------------------------------------
     def is_valid_move(self, move):
-        """Returns true if the move is valid in the current board state."""
+        """Returns True if the move is valid in the current board state."""
         # check the format of the move
         if len(move) != 2:
             return False
