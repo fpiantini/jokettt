@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # --------------------------------------------------------------------
 # jokettt project, v. 0.1
 # by F. Piantini <francesco.piantini@gmail.com>
