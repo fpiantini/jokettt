@@ -76,13 +76,12 @@ class TttBoard:
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
 
-    def pretty_print(self, print_zhash = False):
-        print("     1    2    3")
-        print("A ", self.__board[0])
-        print("B ", self.__board[1])
-        print("C ", self.__board[2])
-        if print_zhash:
-            print("--- hash = ", self.get_zhash())
+    def __str__(self):
+        return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
+            (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
+
+    def __repr__(self):
+        return 'TttBoard(%s)' % self.__board
 
     def __convert_move_coords_to_indexes(self, row, col):
         row_to_x = {
@@ -287,7 +286,7 @@ player_turn = True
 
 while result == 0 and board.is_not_full():
 
-    board.pretty_print(True)
+    print('%s' % board)
     if player_turn:
         x, y = ttyPlayer.move(board)
         result = board.place_pawn(x, y, 'o')
@@ -297,7 +296,7 @@ while result == 0 and board.is_not_full():
 
     player_turn = not player_turn
 
-board.pretty_print(True)
+print('%s' % board)
 if (result > 0):
     print("You lose! :-D")
 elif (result < 0):
