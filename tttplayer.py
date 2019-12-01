@@ -4,7 +4,6 @@
 # ---
 # Tic Tac Toe Player base class definition
 # --------------------------------------------------------------------
-
 # pylint: disable=too-few-public-methods
 
 """Implementation of the TttPlayer base abstract class:
