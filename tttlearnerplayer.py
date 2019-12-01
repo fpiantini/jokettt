@@ -20,7 +20,7 @@ from tttplayer import TttPlayer
 
 class TttLearnerPlayer(TttPlayer):
     """A Tic Tac Toe learner automatic player."""
-    def __init__(self, piece, board, alpha = 0.1):
+    def __init__(self, piece, board, alpha=0.1):
         """TttPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         TttPlayer.__init__(self, piece)
@@ -38,15 +38,10 @@ class TttLearnerPlayer(TttPlayer):
             # playable board
             self.__values[zhash] = 0.5
         self.__last_zhash = zhash
-        return
 
     def move(self, board):
         """Do a move using reinforcement learning algo"""
-        self.__x = None
-        self.__y = None
-        # apply reinforcement learning
-        score, self.__x, self.__y = self.__find_rl_move(board)
-        return self.__x, self.__y
+        return self.__find_rl_move(board)
 
 
     def __find_rl_move(self, board):
@@ -59,7 +54,6 @@ class TttLearnerPlayer(TttPlayer):
         move_list = board.valid_moves()
         shuffle(move_list)  # to add some variability to the play (...maybe)
         best_value = -1000
-        best_score = -1000
         for move in move_list:
             zhash, score = board.place_pawn(move[0], move[1], self.piece)
             board.remove_pawn(move[0], move[1])
@@ -69,9 +63,8 @@ class TttLearnerPlayer(TttPlayer):
                 best_zhash = zhash
                 best_value = self.__values[zhash]
                 best_x, best_y = move
-                best_score = score
                 break
-            elif score < 0:
+            if score < 0:
                 # we lose... try do not select this move
                 # updates values table in any case
                 self.__values[zhash] = 0.0
@@ -88,7 +81,6 @@ class TttLearnerPlayer(TttPlayer):
                 best_zhash = zhash
                 best_value = self.__values[zhash]
                 best_x, best_y = move
-                best_score = score
 
         # move selected... updates current zhash
         self.__values[current_zhash] += \
@@ -97,7 +89,7 @@ class TttLearnerPlayer(TttPlayer):
 
         self.__last_zhash = best_zhash
         print(self.__values)
-        return best_score, best_x, best_y
+        return best_x, best_y
 
     def learn_from_defeat(self, board):
         """Updates the value vector given a final lost position"""
