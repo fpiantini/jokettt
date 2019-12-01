@@ -1,104 +1,116 @@
+#!/usr/bin/env python3
 # --------------------------------------------------------------------
 # jokettt project, v. 0.1
 # by F. Piantini <francesco.piantini@gmail.com>
 # ---
 # Tic Tac Toe Board class definition
 # --------------------------------------------------------------------
+"""Implementation of the TttBoard class: a board to play Tic Tac Toe game."""
 import sys
-import numpy as np
 
 from random import seed
 from random import randint
 
-class TttBoard:
+import numpy as np
 
+class TttBoard:
+    """A board to play Tic Tac Toe game."""
     # ------------------------------------------------------
     def __init__(self, positive_piece, negative_piece,
-                 init_board = [['_', '_', '_'],
-                               ['_', '_', '_'],
-                               ['_', '_', '_']]):
-        self.__posPiece = positive_piece
-        self.__negPiece = negative_piece
+                 init_board=[['_', '_', '_'],
+                             ['_', '_', '_'],
+                             ['_', '_', '_']]):
+        self.__pos_piece = positive_piece
+        self.__neg_piece = negative_piece
         self.__board = init_board
         seed()
+        self.__zobrist_hash = 0
         self.__init_zhash()
 
     # ------------------------------------------------------
     def reset(self,
-              init_board = [['_', '_', '_'],
-                            ['_', '_', '_'],
-                            ['_', '_', '_']]):
-        for x in range(0, 3):
-            for y in range(0, 3):
-                self.__board[x][y] = init_board[x][y]
+              init_board=[['_', '_', '_'],
+                          ['_', '_', '_'],
+                          ['_', '_', '_']]):
+        """Reset the board to the given schema (default = empty)."""
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                self.__board[_x][_y] = init_board[_x][_y]
         # initialize Zobrist hash value
         self.__evaluate_zhash()
 
     # ------------------------------------------------------
     def get_zhash(self):
+        """Return the current Zobrist hash of the board."""
         return self.__zobrist_hash
 
     # ------------------------------------------------------
     def is_not_full(self):
-        for x in range(0, 3):
-            for y in range(0, 3):
-                if self.__board[x][y] == "_":
+        """Returns true if the board is not full."""
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                if self.__board[_x][_y] == "_":
                     return True
         return False
 
     # ------------------------------------------------------
     def is_full(self):
+        """Returns true if the board is full."""
         return not self.is_not_full()
 
     # ------------------------------------------------------
-    def pos_is_empty(self, x, y):
-        if self.__board[x][y] == "_":
-            return True
-        else:
-            return False
+    def pos_is_empty(self, _x, _y):
+        """Returns true if the given board position does not contains a pawn."""
+        return bool(self.__board[_x][_y] == "_")
 
     # ------------------------------------------------------
-    def pos_is_busy(self, x, y):
-        return not self.pos_is_empty(x, y)
+    def pos_is_busy(self, _x, _y):
+        """Returns true if the given board position contains a pawn."""
+        return not self.pos_is_empty(_x, _y)
 
     # ------------------------------------------------------
     def valid_moves(self):
+        """Returns the list of the valid moves in the current board state."""
         move_list = []
-        for x in range(0, 3):
-            for y in range(0, 3):
-                if self.__board[x][y] == "_":
-                    move_list.append([x, y])
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                if self.__board[_x][_y] == "_":
+                    move_list.append([_x, _y])
         return move_list
 
     # ------------------------------------------------------
     def is_valid_move(self, move):
+        """Returns true if the move is valid in the current board state."""
         # check the format of the move
         if len(move) != 2:
             return False
-        x, y = self.convert_move_to_indexes(move)
-        if x == -1 or y == -1:
+        _x, _y = self.convert_move_to_indexes(move)
+        if _x == -1 or _y == -1:
             return False
         # check if the position if free in the board
-        if self.pos_is_busy(x, y):
+        if self.pos_is_busy(_x, _y):
             return False
         return True
 
     # ------------------------------------------------------
-    def place_pawn(self, x, y, piece):
-        if self.pos_is_empty(x, y):
-            self.__board[x][y] = piece
-            self.__update_zhash(x, y, piece)
+    def place_pawn(self, _x, _y, piece):
+        """Places a pawn in the given board position."""
+        if self.pos_is_empty(_x, _y):
+            self.__board[_x][_y] = piece
+            self.__update_zhash(_x, _y, piece)
         return self.get_zhash(), self.evaluate()
 
     # ------------------------------------------------------
-    def remove_pawn(self, x, y):
-        piece = self.__board[x][y]
+    def remove_pawn(self, _x, _y):
+        """Removes a pawn from the given board position."""
+        piece = self.__board[_x][_y]
         if piece != "_":
-            self.__update_zhash(x, y, piece)
-            self.__board[x][y] = "_"
+            self.__update_zhash(_x, _y, piece)
+            self.__board[_x][_y] = "_"
 
     # ------------------------------------------------------
     def evaluate(self):
+        """Evaluates the board value."""
         score = self.__evaluate_rows()
         if score != 0:
             return score
@@ -109,12 +121,15 @@ class TttBoard:
 
     # ------------------------------------------------------
     def convert_move_to_indexes(self, move):
+        """Convert the move from the <row><col> (e.g. "A1") format to the board x,y indexes."""
         row = move[0].upper()
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
 
     # ------------------------------------------------------
-    def __convert_move_coords_to_indexes(self, row, col):
+    @staticmethod
+    def __convert_move_coords_to_indexes(row, col):
+        """Convert move coordinates (e.g. "A","1") to board x,y indexes."""
         row_to_x = {
             "A": 0,
             "B": 1,
@@ -129,80 +144,91 @@ class TttBoard:
 
     # ------------------------------------------------------
     def __evaluate_rows(self):
+        """Evaluates the board value checking only rows."""
         for row in range(0, 3):
-            if self.__board[row][0] == self.__board[row][1] and self.__board[row][1] == self.__board[row][2]:
-                if self.__board[row][0] == self.__posPiece:
+            if self.__board[row][0] == self.__board[row][1] and \
+                    self.__board[row][1] == self.__board[row][2]:
+                if self.__board[row][0] == self.__pos_piece:
                     return 10
-                elif self.__board[row][0] == self.__negPiece:
+                elif self.__board[row][0] == self.__neg_piece:
                     return -10
         return 0
 
     # ------------------------------------------------------
     def __evaluate_cols(self):
+        """Evaluates the board value checking only columns."""
         for col in range(0, 3):
-            if self.__board[0][col] == self.__board[1][col] and self.__board[1][col] == self.__board[2][col]:
-                if self.__board[0][col] == self.__posPiece:
+            if self.__board[0][col] == self.__board[1][col] and \
+               self.__board[1][col] == self.__board[2][col]:
+                if self.__board[0][col] == self.__pos_piece:
                     return 10
-                elif self.__board[0][col] == self.__negPiece:
+                elif self.__board[0][col] == self.__neg_piece:
                     return -10
         return 0
 
     # ------------------------------------------------------
     def __evaluate_diags(self):
-        if self.__board[0][0] == self.__board[1][1] and self.__board[1][1] == self.__board[2][2]:
-            if self.__board[1][1] == self.__posPiece:
+        """Evaluates the board value checking only diagonals."""
+        if self.__board[0][0] == self.__board[1][1] and \
+           self.__board[1][1] == self.__board[2][2]:
+            if self.__board[1][1] == self.__pos_piece:
                 return 10
-            elif self.__board[1][1] == self.__negPiece:
+            elif self.__board[1][1] == self.__neg_piece:
                 return -10
 
-        if self.__board[0][2] == self.__board[1][1] and self.__board[1][1] == self.__board[2][0]:
-            if self.__board[1][1] == self.__posPiece:
+        if self.__board[0][2] == self.__board[1][1] and \
+           self.__board[1][1] == self.__board[2][0]:
+            if self.__board[1][1] == self.__pos_piece:
                 return 10
-            elif self.__board[1][1] == self.__negPiece:
+            elif self.__board[1][1] == self.__neg_piece:
                 return -10
         return 0
 
     # ------------------------------------------------------
     def __init_zhash(self):
+        """Initialize Zobrist hash table."""
         # initialize Zobrist hash table
-        self.__zhash_table = np.empty([3,3,2], dtype=int)
-        for x in range(0, 3):
-            for y in range (0, 3):
-                for e in range (0, 2):
-                    self.__zhash_table[x][y][e] = randint(0, sys.maxsize)
+        self.__zhash_table = np.empty([3, 3, 2], dtype=int)
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                for _e in range(0, 2):
+                    self.__zhash_table[_x][_y][_e] = randint(0, sys.maxsize)
         # initialize Zobrist hash value
         self.__evaluate_zhash()
 
     # ------------------------------------------------------
     def __evaluate_zhash(self):
-        # initialize Zobrist hash value
+        """Initialize Zobrist hash value."""
         self.__zobrist_hash = 0
-        for x in range(0, 3):
-            for y in range(0, 3):
-                piece = self.__board[x][y]
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                piece = self.__board[_x][_y]
                 if piece != "_":
                     piece_ndx = self.__convert_piece_in_index(piece)
-                    self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
+                    self.__zobrist_hash ^= self.__zhash_table[_x][_y][piece_ndx]
 
     # ------------------------------------------------------
-    def __update_zhash(self, x, y, piece):
+    def __update_zhash(self, _x, _y, piece):
+        """Update Zobrist hash value after a board status change
+        due to a single place or remove of a pawn.
+        """
         piece_ndx = self.__convert_piece_in_index(piece)
-        self.__zobrist_hash ^= self.__zhash_table[x][y][piece_ndx]
+        self.__zobrist_hash ^= self.__zhash_table[_x][_y][piece_ndx]
 
     # ------------------------------------------------------
     def __convert_piece_in_index(self, piece):
-        if piece == self.__posPiece:
+        """Convert a piece in internal index."""
+        if piece == self.__pos_piece:
             return 0
         return 1
 
     # ------------------------------------------------------
     def __str__(self):
+        """__str__ display of the board."""
         return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
             (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
 
     # ------------------------------------------------------
     def __repr__(self):
+        """__repr__ representation of the board."""
         return 'TttBoard(%s)' % self.__board
-
-
-
