@@ -4,12 +4,25 @@
 # ---
 # Tic Tac Toe "Learner" Player class definition
 # --------------------------------------------------------------------
+"""Implementation of a "learner" tic-tac-toe player, that improves
+    his gameplay learning during games.
+    The player made use of a value function that assign a value to
+    every board state. Initially the value is 0 for any losing position,
+    1 for every winning position and 0.5 for all the other positions.
+    During games the values of the intermediates position are calibrated
+    using the standard reinforcement learning formula:
+        V(s) = V(s) + alpha * [ V(s') - V(s) ]
+    This class is derived from the TttPlayer base class
+"""
 from random import shuffle
 
 from tttplayer import TttPlayer
 
 class TttLearnerPlayer(TttPlayer):
+    """A Tic Tac Toe learner automatic player."""
     def __init__(self, piece, board, alpha = 0.1):
+        """TttPlayer class constructor. Save the given piece,
+            the alpha value and initializes Value vector."""
         TttPlayer.__init__(self, piece)
         self.__alpha = alpha
         self.__values = {}
@@ -28,6 +41,7 @@ class TttLearnerPlayer(TttPlayer):
         return
 
     def move(self, board):
+        """Do a move using reinforcement learning algo"""
         self.__x = None
         self.__y = None
         # apply reinforcement learning
@@ -36,7 +50,7 @@ class TttLearnerPlayer(TttPlayer):
 
 
     def __find_rl_move(self, board):
-
+        """Find a move that is considered the best depending on current knowledge"""
         current_zhash = board.get_zhash()
         if not current_zhash in self.__values:
             # this means that opponent has moved
@@ -86,6 +100,7 @@ class TttLearnerPlayer(TttPlayer):
         return best_score, best_x, best_y
 
     def learn_from_defeat(self, board):
+        """Updates the value vector given a final lost position"""
         current_zhash = board.get_zhash()
         score = board.evaluate() # this should be negative...
         if score < 0:            # so this check is useless...
@@ -95,7 +110,3 @@ class TttLearnerPlayer(TttPlayer):
             self.__alpha * (self.__values[current_zhash] - \
                             self.__values[self.__last_zhash])
             print(self.__values)
-
-
-
-
