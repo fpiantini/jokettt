@@ -2,11 +2,25 @@
 #
 """Play a tic-tac-toe games between two AI players"""
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentTypeError
 
 from tttboard import TttBoard
 from tttlearnerplayer import TttLearnerPlayer
 from tttminimaxplayer import TttMinimaxPlayer
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+def alpha_value(_x):
+    """Definition of argument type for learner alpha value,
+       a float number in the range (0.0, 1.0]"""
+    try:
+        alpha = float(_x)
+    except ValueError:
+        raise ArgumentTypeError("%r not a floating point literal" % (_x,))
+
+    if alpha <= 0.0 or alpha > 1.0:
+        raise ArgumentTypeError("%r not in range (0.0, 1.0]" % (alpha,))
+    return alpha
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -53,22 +67,18 @@ def update_results_and_print_statistics(res, total_games, results):
     """Update results and print games statistics"""
     if res > 0:
         results['first_win'] += 1
-        print("First Player wins!  --- ", results, " - { ",
-              results['first_win'] / total_games, ", ",
-              results['second_win'] / total_games, ", ",
-              results['draw'] / total_games, " }")
+        result_string = "First player wins!  "
     elif res < 0:
         results['second_win'] += 1
-        print("Second Player wins! --- ", results, " - { ",
-              results['first_win'] / total_games, ", ",
-              results['second_win'] / total_games, ", ",
-              results['draw'] / total_games, " }")
+        result_string = "Second player wins! "
     else:
         results['draw'] += 1
-        print("Draw!               --- ", results, " - { ",
-              results['first_win'] / total_games, ", ",
-              results['second_win'] / total_games, ", ",
-              results['draw'] / total_games, " }")
+        result_string = "Draw!               "
+    print("%s --- %r - {%.3f, %.3f, %.3f}" %
+          (result_string, results,
+           results['first_win'] / total_games,
+           results['second_win'] / total_games,
+           results['draw'] / total_games,))
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -80,10 +90,14 @@ def main():
         plays a series of games"""
 
     parser = ArgumentParser()
-    parser.add_argument("-f", "--first",
+    parser.add_argument("-f", "--first", choices=["minimax", "learner"],
                         help="the mode of the first player", default="minimax")
-    parser.add_argument("-s", "--second",
+    parser.add_argument("-s", "--second", choices=["minimax", "learner"],
                         help="the mode of the second player", default="learner")
+    parser.add_argument("--alpha1", type=alpha_value, default=0.1,
+                        help="alpha parameter for the first player (only if learner)")
+    parser.add_argument("--alpha2", type=alpha_value, default=0.1,
+                        help="alpha parameter for the second player (only if learner)")
     parser.add_argument("-m", "--multiple-games",
                         help="play multiple games", action="store_true")
     parser.add_argument("-v", "--verbosity", action="count",
@@ -93,14 +107,16 @@ def main():
     board = TttBoard('x', 'o')
     if args.first == "minimax":
         first_player = TttMinimaxPlayer('x')
+        print("FIRST PLAYER  = ", args.first)
     else:
-        first_player = TttLearnerPlayer('x', board, 0.5)
+        first_player = TttLearnerPlayer('x', board, args.alpha1)
+        print("FIRST PLAYER  = ", args.first, ", alpha = ", args.alpha1)
     if args.second == "minimax":
         second_player = TttMinimaxPlayer('o')
+        print("SECOND PLAYER = ", args.second)
     else:
-        second_player = TttLearnerPlayer('o', board, 0.5)
-    print("FIRST PLAYER  = ", args.first)
-    print("SECOND PLAYER = ", args.second)
+        second_player = TttLearnerPlayer('o', board, args.alpha2)
+        print("SECOND PLAYER = ", args.second, ", alpha = ", args.alpha2)
     if args.verbosity:
         verbosity = args.verbosity
     else:
