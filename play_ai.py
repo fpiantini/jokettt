@@ -74,11 +74,11 @@ def update_results_and_print_statistics(res, total_games, results):
     else:
         results['draw'] += 1
         result_string = "Draw!               "
-    print("%s --- %r - {%.3f, %.3f, %.3f}" %
-          (result_string, results,
+    print("%s --- {draw = %d, 1st_win = %d, 2nd_win = %d} - {%.3f, %.3f, %.3f}" %
+          (result_string, results['draw'], results['first_win'], results['second_win'],
+           results['draw'] / total_games,
            results['first_win'] / total_games,
-           results['second_win'] / total_games,
-           results['draw'] / total_games,))
+           results['second_win'] / total_games,))
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -90,9 +90,9 @@ def main():
         plays a series of games"""
 
     parser = ArgumentParser()
-    parser.add_argument("-f", "--first", choices=["minimax", "learner"],
+    parser.add_argument("-f", "--first", choices=["minimax", "learner", "random"],
                         help="the mode of the first player", default="minimax")
-    parser.add_argument("-s", "--second", choices=["minimax", "learner"],
+    parser.add_argument("-s", "--second", choices=["minimax", "learner", "random"],
                         help="the mode of the second player", default="learner")
     parser.add_argument("--alpha1", type=alpha_value, default=0.1,
                         help="alpha parameter for the first player (only if learner)")
@@ -108,15 +108,21 @@ def main():
     if args.first == "minimax":
         first_player = TttMinimaxPlayer('x')
         print("FIRST PLAYER  = ", args.first)
-    else:
+    elif args.first == "learner":
         first_player = TttLearnerPlayer('x', board, args.alpha1)
         print("FIRST PLAYER  = ", args.first, ", alpha = ", args.alpha1)
+    else:
+        first_player = TttMinimaxPlayer('x', True)
+        print("FIRST PLAYER  = random (dumb) player")
     if args.second == "minimax":
         second_player = TttMinimaxPlayer('o')
         print("SECOND PLAYER = ", args.second)
-    else:
+    elif args.second == "learner":
         second_player = TttLearnerPlayer('o', board, args.alpha2)
         print("SECOND PLAYER = ", args.second, ", alpha = ", args.alpha2)
+    else:
+        second_player = TttMinimaxPlayer('x', True)
+        print("SECOND PLAYER = random (dumb) player")
     if args.verbosity:
         verbosity = args.verbosity
     else:
