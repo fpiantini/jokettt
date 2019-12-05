@@ -44,10 +44,10 @@ class TttMinimaxPlayer(TttPlayer):
     """A Tic Tac Toe minimax automatic player."""
 
     # ----------------------------------------------------------------------------------------
-    def __init__(self, piece, dumb_mode=False):
+    def __init__(self, piece, dumb_mode=False, verbosity=0):
         """TttPlayer class constructor. Save the given piece,
             and enable dumb mode is requested."""
-        TttPlayer.__init__(self, piece)
+        TttPlayer.__init__(self, piece, verbosity)
         self.set_dumb_mode(dumb_mode)
 
     # ----------------------------------------------------------------------------------------

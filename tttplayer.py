@@ -15,9 +15,10 @@ from abc import ABC, abstractmethod
 
 class TttPlayer(ABC):
     """A Tic Tac Toe player base class."""
-    def __init__(self, piece):
-        """TttPlayer class constructor. Just save the given piece."""
+    def __init__(self, piece, verbosity=0):
+        """TttPlayer class constructor."""
         self.piece = piece
+        self.verbosity = verbosity
         if piece == "x":
             self.other_piece = "o"
         else:

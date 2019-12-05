@@ -53,6 +53,7 @@ def play_human_vs_ai_game(human_player, ai_player, auto_player_first, board):
 # --------------------------------------------------------------------
 AI_PIECE = 'x'
 HUMAN_PIECE = 'o'
+ALPHA_VALUE = 0.1
 def main():
     """Main program: parses options, declare board and players, and
         plays a series of games"""
@@ -61,6 +62,8 @@ def main():
                         choices=["minimax", "learner"], nargs='?', default="minimax")
     parser.add_argument("-s", "--second",
                         help="give the first move to the machine", action="store_true")
+    parser.add_argument("-v", "--verbosity", action="count",
+                        help="increase output verbosity")
     args = parser.parse_args()
 
     if args.second:
@@ -72,11 +75,11 @@ def main():
 
     board = TttBoard(AI_PIECE, HUMAN_PIECE)
     if args.player_mode == "minimax":
-        auto_player = TttMinimaxPlayer(AI_PIECE)
+        auto_player = TttMinimaxPlayer(AI_PIECE, False, args.verbosity)
     else:
-        auto_player = TttLearnerPlayer(AI_PIECE, board)
+        auto_player = TttLearnerPlayer(AI_PIECE, board, ALPHA_VALUE, args.verbosity)
 
-    console_player = TttConsolePlayer(HUMAN_PIECE)
+    console_player = TttConsolePlayer(HUMAN_PIECE, args.verbosity)
 
     while True:
         board.reset()
