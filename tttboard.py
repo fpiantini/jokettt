@@ -102,7 +102,7 @@ class TttBoard:
         # check the format of the move
         if len(move) != 2:
             return False
-        _x, _y = self.convert_move_to_indexes(move)
+        _x, _y = self.convert_movestring_to_indexes(move)
         if _x == -1 or _y == -1:
             return False
         # check if the position if free in the board
@@ -139,11 +139,20 @@ class TttBoard:
         return self.__evaluate_diags(piece, neg_piece)
 
     # ------------------------------------------------------
-    def convert_move_to_indexes(self, move):
-        """Convert the move from the <row><col> (e.g. "A1") format to the board x,y indexes."""
+    def convert_movestring_to_indexes(self, move):
+        """Convert the move from the <row><col> format (e.g. "A1")
+        format to the board x,y indexes.
+        """
         row = move[0].upper()
         col = move[1]
         return self.__convert_move_coords_to_indexes(row, col)
+
+    # ------------------------------------------------------
+    def convert_move_to_movestring(self, move):
+        """Convert the move from the [x,y] move format
+        to the <row><col> string format (e.g. "A1").
+        """
+        return self.__convert_indexes_to_movestring(move[0], move[1])
 
     # ------------------------------------------------------
     @staticmethod
@@ -160,6 +169,25 @@ class TttBoard:
             "3": 2
         }
         return row_to_x.get(row, -1), col_to_y.get(col, -1)
+
+    # ------------------------------------------------------
+    @staticmethod
+    def __convert_indexes_to_movestring(_x, _y):
+        """Convert the move from board x,y indexes to <row><col> format (e.g. "A1")."""
+        x_to_row = {
+            0: "A",
+            1: "B",
+            2: "C"
+        }
+        y_to_col = {
+            0: "1",
+            1: "2",
+            2: "3"
+        }
+        mstring = ""
+        mstring += x_to_row[_x]
+        mstring += y_to_col[_y]
+        return mstring
 
     # ------------------------------------------------------
     def __evaluate_rows(self, pos_piece, neg_piece):
