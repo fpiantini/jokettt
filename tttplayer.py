@@ -18,7 +18,7 @@ class TttPlayer(ABC):
     def __init__(self, piece, verbosity=0):
         """TttPlayer class constructor."""
         self.piece = piece
-        self.verbosity = verbosity
+        self.__verbosity = verbosity
         if piece == "x":
             self.other_piece = "o"
         else:
@@ -30,3 +30,8 @@ class TttPlayer(ABC):
     def move(self, board):
         """Method to make a move. This is the base player,
             so this method is abstract."""
+
+    def log_info(self, *args):
+        """print a log line if verbosity > 0"""
+        if self.__verbosity > 0:
+            print(*args)

@@ -65,6 +65,10 @@ def main():
     parser.add_argument("-v", "--verbosity", action="count",
                         help="increase output verbosity")
     args = parser.parse_args()
+    if args.verbosity:
+        verbosity = args.verbosity
+    else:
+        verbosity = 0
 
     if args.second:
         print("FIRST MOVE TO THE MACHINE!")
@@ -75,11 +79,11 @@ def main():
 
     board = TttBoard(AI_PIECE, HUMAN_PIECE)
     if args.player_mode == "minimax":
-        auto_player = TttMinimaxPlayer(AI_PIECE, False, args.verbosity)
+        auto_player = TttMinimaxPlayer(AI_PIECE, False, verbosity)
     else:
-        auto_player = TttLearnerPlayer(AI_PIECE, board, ALPHA_VALUE, args.verbosity)
+        auto_player = TttLearnerPlayer(AI_PIECE, board, ALPHA_VALUE, verbosity)
 
-    console_player = TttConsolePlayer(HUMAN_PIECE, args.verbosity)
+    console_player = TttConsolePlayer(HUMAN_PIECE, verbosity)
 
     while True:
         board.reset()

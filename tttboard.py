@@ -111,20 +111,21 @@ class TttBoard:
         return True
 
     # ------------------------------------------------------
+    def analyze_move(self, move, piece):
+        """analize a move, returning the new board hash,
+           and the score of the position"""
+        zhash, score = self.place_pawn(move[0], move[1], piece)
+        # return the board in the previous status
+        _ = self.__remove_pawn(move[0], move[1])
+        return zhash, score
+
+    # ------------------------------------------------------
     def place_pawn(self, _x, _y, piece):
         """Places a pawn in the given board position."""
         if self.pos_is_empty(_x, _y):
             self.__board[_x][_y] = piece
             self.__update_zhash(_x, _y, piece)
         return self.get_zhash(), self.evaluate(piece)
-
-    # ------------------------------------------------------
-    def remove_pawn(self, _x, _y):
-        """Removes a pawn from the given board position."""
-        piece = self.__board[_x][_y]
-        if piece != "_":
-            self.__update_zhash(_x, _y, piece)
-            self.__board[_x][_y] = "_"
 
     # ------------------------------------------------------
     def evaluate(self, piece):
@@ -153,6 +154,58 @@ class TttBoard:
         to the <row><col> string format (e.g. "A1").
         """
         return self.__convert_indexes_to_movestring(move[0], move[1])
+
+    # ------------------------------------------------------
+    def __remove_pawn(self, _x, _y):
+        """Removes a pawn from the given board position."""
+        piece = self.__board[_x][_y]
+        if piece != "_":
+            self.__update_zhash(_x, _y, piece)
+            self.__board[_x][_y] = "_"
+        return piece
+
+    # experimental code that try to explore the concept
+    # of "equivalent boards"... could be used by learner
+    # player to speed up learning. Temporarly disabled...
+    # ------------------------------------------------------
+    #def get_zhash_equivalent_boards(self):
+    #    """Return the zhash of the current board and of all
+    #        the equivant simmetrical boards"""
+    #    zhash2 = self.__rotate_board_clockwise()
+    #    zhash3 = self.__rotate_board_clockwise()
+    #    zhash4 = self.__rotate_board_clockwise()
+    #    zhash1 = self.__rotate_board_clockwise()
+    #    return zhash1, zhash2, zhash3, zhash4
+
+    # ------------------------------------------------------
+    #def __replace_pawn(self, _x, _y, piece):
+    #    """Replace a pawn in the given board position
+    #        with the given piece."""
+    #    old_piece = self.__remove_pawn(_x, _y)
+    #    self.place_pawn(_x, _y, piece)
+    #    return old_piece
+
+    # ------------------------------------------------------
+    #def __move_pawn(self, x0, y0, x1, y1):
+    #    """Move the pawn in the [x0, y0] position to the
+    #       [x1, y1] position. Returns the piece that was
+    #       in the [x1, y1] position"""
+    #    return self.__replace_pawn(x1, y1, self.__remove_pawn(x0, y0))
+
+    #def __rotate_board_clockwise(self):
+    #    """Build the board equivalent to the current one
+    #        rotating it by 90 degrees clockwise"""
+    #    piece = self.__board[0][0]
+    #    piece = self.__replace_pawn(0, 2, piece)
+    #    piece = self.__replace_pawn(2, 2, piece)
+    #    piece = self.__replace_pawn(2, 0, piece)
+    #    _ = self.__replace_pawn(0, 0, piece)
+    #    piece = self.__board[0][1]
+    #    piece = self.__replace_pawn(1, 2, piece)
+    #    piece = self.__replace_pawn(2, 1, piece)
+    #    piece = self.__replace_pawn(1, 0, piece)
+    #    _ = self.__replace_pawn(0, 1, piece)
+    #    return self.get_zhash()
 
     # ------------------------------------------------------
     @staticmethod
@@ -249,6 +302,7 @@ class TttBoard:
         """Initialize Zobrist hash table."""
         # initialize Zobrist hash table
         self.__zhash_table = np.empty([3, 3, 2], dtype=int)
+
         for _x in range(0, 3):
             for _y in range(0, 3):
                 for _e in range(0, 2):

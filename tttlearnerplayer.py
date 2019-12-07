@@ -14,7 +14,7 @@
         V(s) = V(s) + alpha * [ V(s') - V(s) ]
     This class is derived from the TttPlayer base class
 """
-###from random import shuffle
+from random import shuffle
 
 from tttplayer import TttPlayer
 
@@ -62,7 +62,8 @@ class TttLearnerPlayer(TttPlayer):
             self.__values[self.__last_zhash] += \
             self.__alpha * (self.__values[current_zhash] - \
                             self.__values[self.__last_zhash])
-            ###print(self.__values)
+            self.log_info("LEARNED FROM DEFEAT... new value for last position: ",
+                          self.__values[self.__last_zhash])
 
     # --------------------------------------------------------------
     def __find_rl_move(self, board):
@@ -71,12 +72,14 @@ class TttLearnerPlayer(TttPlayer):
         if not current_zhash in self.__values:
             # the board status is not in values array:
             # this is the first time we encounter this position
-            if self.verbosity > 0:
-                print("new board status encounted: init to 0.5")
+            self.log_info("new board status encounted: init to 0.5")
             self.__values[current_zhash] = 0.5
 
         move_list = board.valid_moves()
-        #shuffle(move_list)  # to add some variability to the play (...maybe)
+        # interestingly, if we shuffle the possible moves before to select them,
+        # the learning playing against a minimax player is slower
+        shuffle(move_list)  # to add some variability to the play (...maybe)
+
         self.__best_value = -1000
         self.__best_x = None
         self.__best_y = None
@@ -89,52 +92,53 @@ class TttLearnerPlayer(TttPlayer):
         self.__values[current_zhash] += \
             self.__alpha * (self.__values[self.__best_zhash] - \
                             self.__values[current_zhash])
+        self.__values[self.__last_zhash] += \
+            self.__alpha * (self.__values[self.__best_zhash] - \
+                            self.__values[self.__last_zhash])
+
+        self.log_info("Position value updated. New value = ", self.__values[current_zhash])
 
         self.__last_zhash = self.__best_zhash
-        ###print(self.__values)
         return self.__best_x, self.__best_y
 
     # --------------------------------------------------------------
     def __analyze_move(self, move, board):
-        winning_move_found = False
-        zhash, score = board.place_pawn(move[0], move[1], self.piece)
-        if self.verbosity > 0:
-            print("evaluating move: ", board.convert_move_to_movestring(move),
-                  ", score = ", score)
-        board.remove_pawn(move[0], move[1])
+        """Analyze the move "move" given the current "board" status
+            Returns True if the move is winning"""
+
+        # do the move. The analyze_move() method returns the zhash
+        # and the score of the board after the given move.
+        # The score can be > 0 if the move is winning, or 0 if
+        # the move does not cause a win.
+        # Note that it is impossible that the score is < 0: it is
+        # impossible to enter in lost position when it is our turn
+        # to move
+        zhash, score = board.analyze_move(move, self.piece)
+        self.log_info("evaluating move: ", board.convert_move_to_movestring(move),
+                      ", score = ", score)
+
         if score > 0:
             # we win! choose this move
-            if self.verbosity > 0:
-                print("WINNING MOVE! Choose it")
+            self.log_info("WINNING MOVE! Choose it")
             self.__values[zhash] = 1.0
-            self.__best_zhash = zhash
-            self.__best_value = self.__values[zhash]
-            self.__best_x, self.__best_y = move
-            winning_move_found = True
-        if score < 0:
-            # we lose... try do not select this move
-            # updates values table in any case
-            if self.verbosity > 0:
-                print("LOSING MOVE(?!) Avoid it")
-            self.__values[zhash] = 0.0
         else:
             # neutral move... if the hash is not in dictionary
             # this is the first time we encounter this move:
             # initialize value
-            if self.verbosity > 0:
-                print("NEUTRAL MOVE... analyzing it")
+            self.log_info("NEUTRAL MOVE... analyzing it")
             if not zhash in self.__values:
-                if self.verbosity > 0:
-                    print("   - new board status encounted: init to 0.5")
+                self.log_info("   - new board status encounted: init to 0.5")
                 self.__values[zhash] = 0.5
+            else:
+                self.log_info("   - I know this move... value = ", self.__values[zhash])
 
-        # if here the move is not winning...
-        # checks if it is good and continue
+        # It the value of the board after the move is better of values
+        # seen until now, save the move data
         if self.__best_value < self.__values[zhash]:
             self.__best_zhash = zhash
             self.__best_value = self.__values[zhash]
             self.__best_x, self.__best_y = move
-            if self.verbosity > 0:
-                print("   - move is selected as the new best choice - value = ", self.__best_value)
+            self.log_info("   - move is selected as the new best choice - value = ",
+                          self.__best_value)
 
-        return winning_move_found
+        return score > 0
