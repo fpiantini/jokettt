@@ -13,9 +13,9 @@
 #  - with (Zobrist) hash evaluation function
 # --------------------------------------------------------------------
 
-"""Implementation of the Minimax TttPlayer:
+"""Implementation of the Minimax Player:
     a tic-tac-toe perfect minimax Player with alpha-beta-pruning
-    This class is derived from the TttPlayer base class
+    This class is derived from the Player base class
     This player has a "dumb" mode that can be activated at any step:
     in this mode, a random move is chosen
 """
@@ -24,7 +24,8 @@ from copy import deepcopy
 from random import randint
 from random import shuffle
 
-from tttplayer import TttPlayer
+from jokettt.board.board import Board
+from jokettt.players.player import Player
 
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
@@ -40,14 +41,14 @@ class MinimaxParameters:
 
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
-class TttMinimaxPlayer(TttPlayer):
+class MinimaxPlayer(Player):
     """A Tic Tac Toe minimax automatic player."""
 
     # ----------------------------------------------------------------------------------------
     def __init__(self, piece, dumb_mode=False, verbosity=0):
-        """TttPlayer class constructor. Save the given piece,
+        """MinimaxPlayer class constructor. Save the given piece,
             and enable dumb mode is requested."""
-        TttPlayer.__init__(self, piece, verbosity)
+        Player.__init__(self, piece, verbosity)
         self.set_dumb_mode(dumb_mode)
 
     # ----------------------------------------------------------------------------------------

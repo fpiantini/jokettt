@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="jokettt",
-    version="0.0.2",
+    version="0.0.3",
     author="Francesco Piantini",
     author_email="francesco.piantini@gmail.com",
     description="A Tic Tac Toe game developed by joke",

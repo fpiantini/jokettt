@@ -6,21 +6,18 @@
 # --------------------------------------------------------------------
 # pylint: disable=too-few-public-methods
 
-"""Implementation of the Console TttPlayer:
+"""Implementation of the Console Player:
     a player that gets the moves from console. This can be used to make
     able to play an human player using a minimal command line interface.
     The moves shall be entered using the format <row><column>, with
     <row> = A, B, C and <col> = 1, 2, 3.
-    This class is derived from the TttPlayer base class
+    This class is derived from the Player base class
 """
-from tttplayer import TttPlayer
+from jokettt.board.board import Board
+from jokettt.players.player import Player
 
-class TttConsolePlayer(TttPlayer):
+class ConsolePlayer(Player):
     """A Tic Tac Toe console player."""
-    # no need to redefine the __init__ from TttPlayer
-    #def __init__(self, piece):
-    #    pass
-
     def move(self, board):
         """Method to make a move. Just read the move from console (stdin)"""
         # read move from Console

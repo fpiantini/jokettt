@@ -12,21 +12,22 @@
     During games the values of the intermediates position are calibrated
     using the standard reinforcement learning formula:
         V(s) = V(s) + alpha * [ V(s') - V(s) ]
-    This class is derived from the TttPlayer base class
+    This class is derived from the Player base class
 """
 from random import shuffle
 
-from tttplayer import TttPlayer
+from jokettt.board.board import Board
+from jokettt.players.player import Player
 
-class TttLearnerPlayer(TttPlayer):
+class LearnerPlayer(Player):
     """A Tic Tac Toe learner automatic player."""
 
     # --------------------------------------------------------------
     def __init__(self, piece, board, alpha=0.1, verbosity=0):
-        """TttPlayer class constructor. Save the given piece,
+        """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         print("verbosity level = ", verbosity)
-        TttPlayer.__init__(self, piece, verbosity)
+        Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
         self.__values = {}
         self.__best_value = -1000
