@@ -4,7 +4,7 @@
 # ---
 # Tic Tac Toe Board class definition
 # --------------------------------------------------------------------
-"""Implementation of the TttBoard class: a board to play Tic Tac Toe game."""
+"""Implementation of the Board class: a board to play Tic Tac Toe game."""
 import sys
 
 from random import seed
@@ -12,12 +12,12 @@ from random import randint
 
 import numpy as np
 
-class TttBoard:
+class Board:
     """A board to play Tic Tac Toe game."""
     # ------------------------------------------------------
     def __init__(self, first_piece, second_piece, init_board=None):
 
-        """TttBoard class constructor"""
+        """Board class constructor"""
         if init_board is not None:
             self.__board = init_board
         else:
@@ -353,4 +353,4 @@ class TttBoard:
     # ------------------------------------------------------
     def __repr__(self):
         """__repr__ representation of the board."""
-        return 'TttBoard(%s)' % self.__board
+        return 'Board(%s)' % self.__board
