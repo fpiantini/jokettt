@@ -3,3 +3,6 @@ dependencies:
 - python=3
 - pylint
 - numpy
+- setuptools
+- wheel
+- twine
