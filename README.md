@@ -1,14 +1,13 @@
 # JokeTTT: a Tic Tac Toe game developed by joke
 
-JokeTTT is a tic tac toe game developed just for fun and to learn Python and some concepts of machine learning.
+JokeTTT is a library providing tic tac toe structures useful to develop games based on several kind of players.
+It was developed just for fun and to learn Python and some concepts of machine learning.
 
 ## Project setup
 
-The project has been tested only with python3 on Ubuntu Linux. If you have python3 installed in your machine, just try the code entering the command:
+The project has been tested only with python3 on Ubuntu Linux. If you have python3 installed in your machine, just install the package with the usual ```pip``` command.
 
-```bash
-./play.py
-```
+You can use the demo programs in the [https://github.com/fpiantini/jokettt_demo](https://github.com/fpiantini/jokettt_demo) as example on how to use the library.
 
 To avoid the usual problems with messy Python configurations (python 2 vs. 3, packages to install, etc.), conda is used for development.
 
