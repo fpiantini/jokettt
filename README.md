@@ -43,4 +43,4 @@ conda env update
 [TDHopper article on python environment with conda]: https://tdhopper.com/blog/my-python-environment-workflow-with-conda/
 [Get your computer ready for machine learning using *conda]: https://towardsdatascience.com/get-your-computer-ready-for-machine-learning-how-what-and-why-you-should-use-anaconda-miniconda-d213444f36d6
 [Minimax introduction article]: https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/
-[An introduction to reinforcement learning] https://medium.com/free-code-camp/an-introduction-to-reinforcement-learning-4339519de419
+[An introduction to reinforcement learning]: https://medium.com/free-code-camp/an-introduction-to-reinforcement-learning-4339519de419
