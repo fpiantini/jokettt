@@ -24,8 +24,8 @@ from copy import deepcopy
 from random import randint
 from random import shuffle
 
-from jokettt.board.board import Board
-from jokettt.players.player import Player
+from jokettt.board import Board
+from jokettt.player import Player
 
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ class MinimaxPlayer(Player):
         """Find the best move (or one of the best) using the minimax algo"""
         best_x = None
         best_y = None
-        val = board.evaluate(self.piece)
+        _, val = board.evaluate(self.piece)
         if val != 0 or board.is_full():
             # evaluate function returns a positive value
             # if maximizer win, a negative value otherwise

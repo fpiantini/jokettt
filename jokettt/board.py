@@ -6,16 +6,14 @@
 # --------------------------------------------------------------------
 """Implementation of the Board class: a board to play Tic Tac Toe game."""
 import sys
-
-from random import seed
-from random import randint
+import random
 
 import numpy as np
 
 class Board:
     """A board to play Tic Tac Toe game."""
     # ------------------------------------------------------
-    def __init__(self, first_piece, second_piece, init_board=None):
+    def __init__(self, first_piece, second_piece, init_zhash=None, init_board=None):
 
         """Board class constructor"""
         if init_board is not None:
@@ -27,9 +25,7 @@ class Board:
 
         self.__first_piece = first_piece
         self.__second_piece = second_piece
-        seed()
-        self.__zobrist_hash = 0
-        self.__init_zhash()
+        self.__init_zhash(init_zhash)
 
     # ------------------------------------------------------
     def reset(self, init_board=None):
@@ -46,11 +42,6 @@ class Board:
 
         # initialize Zobrist hash value
         self.__evaluate_zhash()
-
-    # ------------------------------------------------------
-    def get_zhash(self):
-        """Return the current Zobrist hash of the board."""
-        return self.__zobrist_hash
 
     # ------------------------------------------------------
     def is_empty(self):
@@ -125,7 +116,7 @@ class Board:
         if self.pos_is_empty(_x, _y):
             self.__board[_x][_y] = piece
             self.__update_zhash(_x, _y, piece)
-        return self.get_zhash(), self.evaluate(piece)
+        return self.evaluate(piece)
 
     # ------------------------------------------------------
     def evaluate(self, piece):
@@ -133,11 +124,11 @@ class Board:
         neg_piece = self.__get_other_piece(piece)
         score = self.__evaluate_rows(piece, neg_piece)
         if score != 0:
-            return score
+            return self.__zobrist_hash, score
         score = self.__evaluate_cols(piece, neg_piece)
         if score != 0:
-            return score
-        return self.__evaluate_diags(piece, neg_piece)
+            return self.__zobrist_hash, score
+        return self.__zobrist_hash, self.__evaluate_diags(piece, neg_piece)
 
     # ------------------------------------------------------
     def convert_movestring_to_indexes(self, move):
@@ -205,7 +196,7 @@ class Board:
     #    piece = self.__replace_pawn(2, 1, piece)
     #    piece = self.__replace_pawn(1, 0, piece)
     #    _ = self.__replace_pawn(0, 1, piece)
-    #    return self.get_zhash()
+    #    return self.__zobrist_hash
 
     # ------------------------------------------------------
     @staticmethod
@@ -298,21 +289,29 @@ class Board:
         return val
 
     # ------------------------------------------------------
-    def __init_zhash(self):
-        """Initialize Zobrist hash table."""
-        # initialize Zobrist hash table
-        self.__zhash_table = np.empty([3, 3, 2], dtype=int)
+    def __init_zhash(self, init_zhash):
+        """Initialize Zobrist hash table with values provided
+        or generating random values."""
 
-        for _x in range(0, 3):
-            for _y in range(0, 3):
-                for _e in range(0, 2):
-                    self.__zhash_table[_x][_y][_e] = randint(0, sys.maxsize)
-        # initialize Zobrist hash value
+        self.__zhash_table = np.empty([3, 3, 2], dtype=int)
+        if init_zhash is not None:
+            for _x in range(0, 3):
+                for _y in range(0, 3):
+                    for _e in range(0, 2):
+                        self.__zhash_table[_x][_y][_e] = init_zhash[_x][_y][_e]
+        else:
+            random.seed()
+            for _x in range(0, 3):
+                for _y in range(0, 3):
+                    for _e in range(0, 2):
+                        self.__zhash_table[_x][_y][_e] = random.randint(0, sys.maxsize)
+
+        # compute current board Zobrist hash value
         self.__evaluate_zhash()
 
     # ------------------------------------------------------
     def __evaluate_zhash(self):
-        """Initialize Zobrist hash value."""
+        """Completely evaluates Zobrist hash value of the current board."""
         self.__zobrist_hash = 0
         for _x in range(0, 3):
             for _y in range(0, 3):
@@ -346,7 +345,7 @@ class Board:
     def __str__(self):
         """__str__ display of the board."""
         ###return '     1    2    3\nA %r\nB %r\nC %r\n--- hash = %r' % \
-        ###    (self.__board[0], self.__board[1], self.__board[2], self.get_zhash())
+        ###    (self.__board[0], self.__board[1], self.__board[2], self.__zobrist_hash
         return '    1    2    3\nA %r\nB %r\nC %r\n' % \
             (self.__board[0], self.__board[1], self.__board[2])
 

@@ -13,8 +13,8 @@
     <row> = A, B, C and <col> = 1, 2, 3.
     This class is derived from the Player base class
 """
-from jokettt.board.board import Board
-from jokettt.players.player import Player
+from jokettt.board import Board
+from jokettt.player import Player
 
 class ConsolePlayer(Player):
     """A Tic Tac Toe console player."""

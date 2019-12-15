@@ -16,8 +16,8 @@
 """
 from random import shuffle
 
-from jokettt.board.board import Board
-from jokettt.players.player import Player
+from jokettt.board import Board
+from jokettt.player import Player
 
 class LearnerPlayer(Player):
     """A Tic Tac Toe learner automatic player."""
@@ -34,8 +34,8 @@ class LearnerPlayer(Player):
         self.__best_x = None
         self.__best_y = None
         self.__best_zhash = -1
-        zhash = board.get_zhash()
-        score = board.evaluate(self.piece)
+        ##zhash = board.get_zhash()
+        zhash, score = board.evaluate(self.piece)
         if score > 0:
             # winning board...
             self.__values[zhash] = 1.0
@@ -55,13 +55,13 @@ class LearnerPlayer(Player):
     # --------------------------------------------------------------
     def learn_from_defeat(self, board):
         """Updates the value vector given a final lost position"""
-        current_zhash = board.get_zhash()
-        score = board.evaluate(self.piece) # this should be negative...
+        ###zhash = board.get_zhash()
+        zhash, score = board.evaluate(self.piece) # score should be negative...
         if score < 0:            # so this check is useless...
             # defeat...
-            self.__values[current_zhash] = 0.0
+            self.__values[zhash] = 0.0
             self.__values[self.__last_zhash] += \
-            self.__alpha * (self.__values[current_zhash] - \
+            self.__alpha * (self.__values[zhash] - \
                             self.__values[self.__last_zhash])
             self.log_info("LEARNED FROM DEFEAT... new value for last position: ",
                           self.__values[self.__last_zhash])
@@ -69,12 +69,16 @@ class LearnerPlayer(Player):
     # --------------------------------------------------------------
     def __find_rl_move(self, board):
         """Find a move that is considered the best depending on current knowledge"""
-        current_zhash = board.get_zhash()
-        if not current_zhash in self.__values:
+        zhash, value = board.evaluate(self.piece)
+        # value should be zero, otherwise the game is completed
+        if value != 0:
+            return None, None
+
+        if not zhash in self.__values:
             # the board status is not in values array:
             # this is the first time we encounter this position
             self.log_info("new board status encounted: init to 0.5")
-            self.__values[current_zhash] = 0.5
+            self.__values[zhash] = 0.5
 
         move_list = board.valid_moves()
         # interestingly, if we shuffle the possible moves before to select them,
@@ -90,14 +94,14 @@ class LearnerPlayer(Player):
                 break
 
         # move selected... updates current zhash
-        self.__values[current_zhash] += \
+        self.__values[zhash] += \
             self.__alpha * (self.__values[self.__best_zhash] - \
-                            self.__values[current_zhash])
+                            self.__values[zhash])
         self.__values[self.__last_zhash] += \
             self.__alpha * (self.__values[self.__best_zhash] - \
                             self.__values[self.__last_zhash])
 
-        self.log_info("Position value updated. New value = ", self.__values[current_zhash])
+        self.log_info("Position value updated. New value = ", self.__values[zhash])
 
         self.__last_zhash = self.__best_zhash
         return self.__best_x, self.__best_y
