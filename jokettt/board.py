@@ -54,6 +54,29 @@ class Board:
         return False
 
     # ------------------------------------------------------
+    def only_one_piece_present(self):
+        """Returns True if only one piece present on board."""
+        num_pieces = 0
+        for _x in range(0, 3):
+            for _y in range(0, 3):
+                if self.__board[_x][_y] != "_":
+                    num_pieces += 1
+        if num_pieces == 1:
+            return True
+        return False
+
+    # ------------------------------------------------------
+    def at_least_a_corner_busy(self):
+        return self.__board[0][0] != '_' or \
+               self.__board[0][2] != '_' or \
+               self.__board[2][0] != '_' or \
+               self.__board[2][2] != '_'
+
+    # ------------------------------------------------------
+    def center_is_busy(self):
+        return self.__board[1][1] != '_'
+
+    # ------------------------------------------------------
     def is_not_full(self):
         """Returns True if the board is not full."""
         for _x in range(0, 3):

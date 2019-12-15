@@ -20,9 +20,7 @@
     in this mode, a random move is chosen
 """
 from copy import deepcopy
-
-from random import randint
-from random import shuffle
+import random
 
 from jokettt.board import Board
 from jokettt.player import Player
@@ -68,10 +66,10 @@ class MinimaxPlayer(Player):
         """Do a smart move (using minimax algo). If this is the first move,
             performs a random move using dumb mode"""
         if board.is_empty():
-            ###print("I'm smart, but this is first move... choose random move")
             return self.__move_dumb(board)
+        if board.only_one_piece_present():
+            return self.__do_smart_first_move_as_second(board)
 
-        ###print("I'm smart, choose best move")
         _, best_x, best_y = self.__find_move_minimax(board, MinimaxParameters(0, True, -1000, 1000))
         return best_x, best_y
 
@@ -89,7 +87,7 @@ class MinimaxPlayer(Player):
             return val + mm_par.depth, best_x, best_y
 
         move_list = board.valid_moves()
-        shuffle(move_list)  # to add some variability to the play (...maybe)
+        random.shuffle(move_list)  # to add some variability to the play (...maybe)
         if mm_par.is_maximizer:
             best_score = -1000
             for move in move_list:
@@ -129,7 +127,27 @@ class MinimaxPlayer(Player):
         if board.is_full():
             return None, None
         while True:
-            _x = randint(0, 2)
-            _y = randint(0, 2)
+            _x = random.randint(0, 2)
+            _y = random.randint(0, 2)
             if board.pos_is_empty(_x, _y):
                 return _x, _y
+
+    # ----------------------------------------------------------------------------------------
+    def __do_smart_first_move_as_second(self, board):
+        if board.at_least_a_corner_busy():
+            # we shall move on B2
+            return 1, 1
+        if board.center_is_busy():
+            # we shall move in a corner
+            rnd = random.randint(0,3)
+            if rnd == 0:
+                return 0, 0
+            if rnd == 1:
+                return 0, 2
+            if rnd == 2:
+                return 2, 0
+            if rnd == 3:
+                return 2, 2
+        # otherwise the thing is more complex... for the moment
+        # we move in the center... this always works
+        return 1, 1
