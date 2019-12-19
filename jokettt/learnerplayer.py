@@ -23,13 +23,13 @@ class LearnerPlayer(Player):
     """A Tic Tac Toe learner automatic player."""
 
     # --------------------------------------------------------------
-    def __init__(self, piece, board, alpha=0.1, verbosity=0):
+    def __init__(self, piece, board, init_value={}, alpha=0.1, verbosity=0):
         """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         print("verbosity level = ", verbosity)
         Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
-        self.__values = {}
+        self.values = {}
         self.__best_value = -1000
         self.__best_x = None
         self.__best_y = None
@@ -38,13 +38,13 @@ class LearnerPlayer(Player):
         zhash, score = board.evaluate(self.piece)
         if score > 0:
             # winning board...
-            self.__values[zhash] = 1.0
+            self.values[zhash] = 1.0
         elif score < 0:
             #losing board
-            self.__values[zhash] = 0.0
+            self.values[zhash] = 0.0
         else:
             # playable board
-            self.__values[zhash] = 0.5
+            self.values[zhash] = 0.5
         self.__last_zhash = zhash
 
     # --------------------------------------------------------------
@@ -59,12 +59,12 @@ class LearnerPlayer(Player):
         zhash, score = board.evaluate(self.piece) # score should be negative...
         if score < 0:            # so this check is useless...
             # defeat...
-            self.__values[zhash] = 0.0
-            self.__values[self.__last_zhash] += \
-            self.__alpha * (self.__values[zhash] - \
-                            self.__values[self.__last_zhash])
+            self.values[zhash] = 0.0
+            self.values[self.__last_zhash] += \
+            self.__alpha * (self.values[zhash] - \
+                            self.values[self.__last_zhash])
             self.log_info("LEARNED FROM DEFEAT... new value for last position: ",
-                          self.__values[self.__last_zhash])
+                          self.values[self.__last_zhash])
 
     # --------------------------------------------------------------
     def __find_rl_move(self, board):
@@ -74,11 +74,11 @@ class LearnerPlayer(Player):
         if value != 0:
             return None, None
 
-        if not zhash in self.__values:
+        if not zhash in self.values:
             # the board status is not in values array:
             # this is the first time we encounter this position
             self.log_info("new board status encounted: init to 0.5")
-            self.__values[zhash] = 0.5
+            self.values[zhash] = 0.5
 
         move_list = board.valid_moves()
         # interestingly, if we shuffle the possible moves before to select them,
@@ -94,14 +94,14 @@ class LearnerPlayer(Player):
                 break
 
         # move selected... updates current zhash
-        self.__values[zhash] += \
-            self.__alpha * (self.__values[self.__best_zhash] - \
-                            self.__values[zhash])
-        self.__values[self.__last_zhash] += \
-            self.__alpha * (self.__values[self.__best_zhash] - \
-                            self.__values[self.__last_zhash])
+        self.values[zhash] += \
+            self.__alpha * (self.values[self.__best_zhash] - \
+                            self.values[zhash])
+        self.values[self.__last_zhash] += \
+            self.__alpha * (self.values[self.__best_zhash] - \
+                            self.values[self.__last_zhash])
 
-        self.log_info("Position value updated. New value = ", self.__values[zhash])
+        self.log_info("Position value updated. New value = ", self.values[zhash])
 
         self.__last_zhash = self.__best_zhash
         return self.__best_x, self.__best_y
@@ -125,23 +125,23 @@ class LearnerPlayer(Player):
         if score > 0:
             # we win! choose this move
             self.log_info("WINNING MOVE! Choose it")
-            self.__values[zhash] = 1.0
+            self.values[zhash] = 1.0
         else:
             # neutral move... if the hash is not in dictionary
             # this is the first time we encounter this move:
             # initialize value
             self.log_info("NEUTRAL MOVE... analyzing it")
-            if not zhash in self.__values:
+            if not zhash in self.values:
                 self.log_info("   - new board status encounted: init to 0.5")
-                self.__values[zhash] = 0.5
+                self.values[zhash] = 0.5
             else:
-                self.log_info("   - I know this move... value = ", self.__values[zhash])
+                self.log_info("   - I know this move... value = ", self.values[zhash])
 
         # It the value of the board after the move is better of values
         # seen until now, save the move data
-        if self.__best_value < self.__values[zhash]:
+        if self.__best_value < self.values[zhash]:
             self.__best_zhash = zhash
-            self.__best_value = self.__values[zhash]
+            self.__best_value = self.values[zhash]
             self.__best_x, self.__best_y = move
             self.log_info("   - move is selected as the new best choice - value = ",
                           self.__best_value)

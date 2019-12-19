@@ -6,12 +6,22 @@ from argparse import ArgumentParser, ArgumentTypeError
 import os
 import sys
 import random
+import signal
 
 import numpy as np
 
 from jokettt.board import Board
 from jokettt.consoleplayer import ConsolePlayer
 from jokettt.learnerplayer import LearnerPlayer
+
+
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+def file_to_save(_x):
+    """Definition of argument type for learner save data file,
+       a string with a pathname of a file."""
+    return _x
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -97,6 +107,8 @@ def main():
                         help="increase output verbosity")
     parser.add_argument("-l", "--loaddata", type=file_to_load,
                         help="load learned data from file")
+    parser.add_argument("-s", "--savedata", type=file_to_save,
+                        help="save learned data from file")
     args = parser.parse_args()
     if args.verbosity:
         verbosity = args.verbosity
@@ -108,18 +120,52 @@ def main():
     print("...loading data from %s" % args.loaddata)
     if args.loaddata:
         try:
-            ztable_init = np.load(args.loaddata)
+            init_data = np.load(args.loaddata, allow_pickle=True)
         except:
-            print("error reading learned data from %s" % args.loaddata)
-            ztable_init = build_random_ztable_initdata()
+            print("error reading learned data from file %s" % args.loaddata)
+            init_ztable = build_random_ztable_initdata()
+            init_values = {}
+
+        try:
+            init_ztable = init_data['zobrist_hash']
+        except:
+            print("error reading 'zobrist_hash' from loaded file")
+            init_ztable = build_random_ztable_initdata()
+
+        try:
+            init_values = init_data['value_tuple']
+        except:
+            print("error reading 'value_tuple' from loaded file")
+            init_values = {}
+
     else:
-        ztable_init = build_random_ztable_initdata()
+        init_ztable = build_random_ztable_initdata()
+        init_values = {}
+
+
+    print(init_ztable)
+    print(init_values)
+    print("...the learned data will be saved to %s.npz" % args.savedata)
 
     # --------------------------------------------------
     # 3. DECLARES BOARD AND PLAYERS
-    board = Board(AI_PIECE, HUMAN_PIECE, ztable_init)
-    auto_player = LearnerPlayer(AI_PIECE, board, ALPHA_VALUE, verbosity)
+    board = Board(AI_PIECE, HUMAN_PIECE, init_ztable)
+    auto_player = LearnerPlayer(AI_PIECE, board, init_values, ALPHA_VALUE, verbosity)
     console_player = ConsolePlayer(HUMAN_PIECE, verbosity)
+
+    # --------------------------------------------------
+    # installs SIGINT signal handler
+    # the definition is here because we want to see variables (closure)
+    def signal_handler(*sargs):
+        if args.savedata:
+            print('\n------------------ saving learned data end exiting ----')
+            np.savez(args.savedata, zobrist_hash = board.zhash_table,
+                     value_tuple = auto_player.values)
+            print(board.zhash_table)
+            print(auto_player.values)
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
 
     # --------------------------------------------------
     # 4. PLAYS!

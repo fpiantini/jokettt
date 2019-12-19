@@ -316,18 +316,18 @@ class Board:
         """Initialize Zobrist hash table with values provided
         or generating random values."""
 
-        self.__zhash_table = np.empty([3, 3, 2], dtype=int)
+        self.zhash_table = np.empty([3, 3, 2], dtype=int)
         if init_zhash is not None:
             for _x in range(0, 3):
                 for _y in range(0, 3):
                     for _e in range(0, 2):
-                        self.__zhash_table[_x][_y][_e] = init_zhash[_x][_y][_e]
+                        self.zhash_table[_x][_y][_e] = init_zhash[_x][_y][_e]
         else:
             random.seed()
             for _x in range(0, 3):
                 for _y in range(0, 3):
                     for _e in range(0, 2):
-                        self.__zhash_table[_x][_y][_e] = random.randint(0, sys.maxsize)
+                        self.zhash_table[_x][_y][_e] = random.randint(0, sys.maxsize)
 
         # compute current board Zobrist hash value
         self.__evaluate_zhash()
@@ -341,7 +341,7 @@ class Board:
                 piece = self.__board[_x][_y]
                 if piece != "_":
                     piece_ndx = self.__convert_piece_in_index(piece)
-                    self.__zobrist_hash ^= self.__zhash_table[_x][_y][piece_ndx]
+                    self.__zobrist_hash ^= self.zhash_table[_x][_y][piece_ndx]
 
     # ------------------------------------------------------
     def __update_zhash(self, _x, _y, piece):
@@ -349,7 +349,7 @@ class Board:
         due to a single place or remove of a pawn.
         """
         piece_ndx = self.__convert_piece_in_index(piece)
-        self.__zobrist_hash ^= self.__zhash_table[_x][_y][piece_ndx]
+        self.__zobrist_hash ^= self.zhash_table[_x][_y][piece_ndx]
 
     # ------------------------------------------------------
     def __convert_piece_in_index(self, piece):
