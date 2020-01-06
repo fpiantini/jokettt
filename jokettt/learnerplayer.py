@@ -23,28 +23,29 @@ class LearnerPlayer(Player):
     """A Tic Tac Toe learner automatic player."""
 
     # --------------------------------------------------------------
-    def __init__(self, piece, board, init_value={}, alpha=0.1, verbosity=0):
+    def __init__(self, piece, board, init_values={}, alpha=0.1, verbosity=0):
         """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         print("verbosity level = ", verbosity)
         Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
-        self.values = {}
+
+        self.values = init_values
         self.__best_value = -1000
         self.__best_x = None
         self.__best_y = None
         self.__best_zhash = -1
-        ##zhash = board.get_zhash()
         zhash, score = board.evaluate(self.piece)
-        if score > 0:
-            # winning board...
-            self.values[zhash] = 1.0
-        elif score < 0:
-            #losing board
-            self.values[zhash] = 0.0
-        else:
-            # playable board
-            self.values[zhash] = 0.5
+        if not zhash in self.values:
+            if score > 0:
+                # winning board...
+                self.values[zhash] = 1.0
+            elif score < 0:
+                #losing board
+                self.values[zhash] = 0.0
+            else:
+                # playable board
+                self.values[zhash] = 0.5
         self.__last_zhash = zhash
 
     # --------------------------------------------------------------
@@ -120,7 +121,7 @@ class LearnerPlayer(Player):
         # to move
         zhash, score = board.analyze_move(move, self.piece)
         self.log_info("evaluating move: ", board.convert_move_to_movestring(move),
-                      ", score = ", score)
+                      ", score = ", score, ", zhash = ", zhash)
 
         if score > 0:
             # we win! choose this move

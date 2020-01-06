@@ -8,6 +8,8 @@ from jokettt.board import Board
 from jokettt.learnerplayer import LearnerPlayer
 from jokettt.minimaxplayer import MinimaxPlayer
 
+DEFAULT_ALPHA_VALUE = 0.1
+
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 def alpha_value(_x):
@@ -105,14 +107,26 @@ def main():
     parser.add_argument("-v", "--verbosity", action="count",
                         help="increase output verbosity")
     args = parser.parse_args()
+    if args.verbosity:
+        verbosity = args.verbosity
+    else:
+        verbosity = 0
+    if args.alpha1:
+        alpha1 = args.alpha1
+    else:
+        alpha1 = DEFAULT_ALPHA_VALUE
+    if args.alpha2:
+        alpha2 = args.alpha2
+    else:
+        alpha2 = DEFAULT_ALPHA_VALUE
 
     board = Board('x', 'o')
     if args.player_a == "minimax":
         player_a = MinimaxPlayer('x')
         print("PLAYER A = ", args.player_a)
     elif args.player_a == "learner":
-        player_a = LearnerPlayer('x', board, args.alpha1)
-        print("PLAYER A = ", args.player_a, ", alpha = ", args.alpha1)
+        player_a = LearnerPlayer('x', board, {}, alpha1, verbosity)
+        print("PLAYER A = ", args.player_a, ", alpha = ", alpha1)
     else:
         player_a = MinimaxPlayer('x', True)
         print("PLAYER A = random (dumb) player")
@@ -120,15 +134,11 @@ def main():
         player_b = MinimaxPlayer('o')
         print(" PLAYER B = ", args.player_b)
     elif args.player_b == "learner":
-        player_b = LearnerPlayer('o', board, args.alpha2)
-        print(" PLAYER B = ", args.player_b, ", alpha = ", args.alpha2)
+        player_b = LearnerPlayer('o', board, {}, alpha2, verbosity)
+        print(" PLAYER B = ", args.player_b, ", alpha = ", alpha2)
     else:
         player_b = MinimaxPlayer('x', True)
         print(" PLAYER B = random (dumb) player")
-    if args.verbosity:
-        verbosity = args.verbosity
-    else:
-        verbosity = 0
 
     results = {}
     results['player_a_win'] = 0

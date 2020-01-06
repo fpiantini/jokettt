@@ -90,7 +90,7 @@ def main():
     if args.player_mode == "minimax":
         auto_player = MinimaxPlayer(AI_PIECE, False, verbosity)
     else:
-        auto_player = LearnerPlayer(AI_PIECE, board, ALPHA_VALUE, verbosity)
+        auto_player = LearnerPlayer(AI_PIECE, board, {}, ALPHA_VALUE, verbosity)
 
     console_player = ConsolePlayer(HUMAN_PIECE, verbosity)
 
