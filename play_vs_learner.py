@@ -133,7 +133,7 @@ def main():
             init_ztable = build_random_ztable_initdata()
 
         try:
-            init_values = init_data['value_tuple']
+            init_values = init_data['value_tuple'].item()
         except:
             print("error reading 'value_tuple' from loaded file")
             init_values = {}
@@ -143,9 +143,10 @@ def main():
         init_values = {}
 
 
-    print(init_ztable)
-    print(init_values)
-    print("...the learned data will be saved to %s.npz" % args.savedata)
+    if args.savedata:
+        print("...the learned data will be saved to %s.npz" % args.savedata)
+    else:
+        print("...the learned data will not be saved")
 
     # --------------------------------------------------
     # 3. DECLARES BOARD AND PLAYERS

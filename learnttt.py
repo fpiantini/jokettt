@@ -6,6 +6,12 @@
 
 from argparse import ArgumentParser, ArgumentTypeError
 
+import os
+import sys
+import random
+
+import numpy as np
+
 from jokettt.board import Board
 from jokettt.learnerplayer import LearnerPlayer
 from jokettt.minimaxplayer import MinimaxPlayer
@@ -34,7 +40,7 @@ def number_of_games(_n):
     """Definition of argument type for number of games to play,
        a positive integer. If zero, play forever"""
     try:
-        num_games = int(_x)
+        num_games = int(_n)
     except ValueError:
         raise ArgumentTypeError("%r not an integer" % (_n,))
 
@@ -60,6 +66,17 @@ def file_to_load(_x):
     if not os.path.isfile(_x):
         raise ArgumentTypeError("%s is not a file" % (_x,))
     return _x
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+def build_random_ztable_initdata():
+    ztable_init = np.empty([3, 3, 2], dtype=int)
+    random.seed()
+    for _x in range(0, 3):
+        for _y in range(0, 3):
+            for _e in range(0, 2):
+                ztable_init[_x][_y][_e] = random.randint(0, sys.maxsize)
+    return ztable_init
 
 
 # --------------------------------------------------------------------
@@ -138,9 +155,9 @@ def main():
                         help="alpha parameter for the learner player")
     parser.add_argument("--alpha2", type=alpha_value, default=0.1,
                         help="alpha parameter for the opponent player (only if learner)")
-    parser.add_argument("-n", "--num-games", type=number_of_games, default=100,
-                        help="Number of games to play", action="store_true")
-    parser.add_argument("-s", "--switch_turn", action="store_true",
+    parser.add_argument("-n", "--num_games", type=number_of_games, default=100,
+                        help="Number of games to play")
+    parser.add_argument("--switch_turn", action="store_true",
                         help="swith first move between players")
     parser.add_argument("-l", "--loaddata", type=file_to_load,
                         help="load learned data from file")
@@ -164,9 +181,9 @@ def main():
 
     # --------------------------------------------------
     # If requested, load learned data
-    print("...loading data from %s" % args.loaddata)
     if args.loaddata:
         try:
+            print("...loading data from %s" % args.loaddata)
             init_data = np.load(args.loaddata, allow_pickle=True)
         except:
             print("error reading learned data from file %s" % args.loaddata)
@@ -180,7 +197,7 @@ def main():
             init_ztable = build_random_ztable_initdata()
 
         try:
-            init_values = init_data['value_tuple']
+            init_values = init_data['value_tuple'].item()
         except:
             print("error reading 'value_tuple' from loaded file")
             init_values = {}
@@ -189,26 +206,30 @@ def main():
         init_ztable = build_random_ztable_initdata()
         init_values = {}
 
-    print(init_ztable)
-    print(init_values)
-    print("...the learned data will be saved to %s.npz" % args.savedata)
+    if args.savedata:
+        print("...the learned data will be saved to %s.npz" % args.savedata)
+    else:
+        print("...the learned data will not be saved")
 
     # --------------------------------------------------
     # Declares board and players
     board = Board(LEARNER_PIECE, OPPONENT_PIECE, init_ztable)
     player_a = LearnerPlayer(LEARNER_PIECE, board, init_values, alpha1, verbosity)
-    print(" LEARNER PLAYER = ", args.player_b, ", alpha = ", alpha1)
+    print(" LEARNER PLAYER --- alpha = ", alpha1)
 
-    if args.player_b == "minimax":
+    if args.opponenttype == "minimax":
         player_b = MinimaxPlayer(OPPONENT_PIECE)
-        print(" OPPONENT IS A SMART MINIMAX PLAYER = ", args.player_b)
-    elif args.player_b == "learner":
+        print(" OPPONENT IS A SMART MINIMAX PLAYER")
+    elif args.opponenttype == "learner":
         player_b = LearnerPlayer(OPPONENT_PIECE, board, alpha2)
-        print(" OPPONENT IS A LEARNER PLAYER = ", args.player_b, ", alpha = ", alpha2)
+        print(" OPPONENT IS A LEARNER PLAYER --- alpha = ", alpha2)
     else:
         player_b = MinimaxPlayer(OPPONENT_PIECE, True)
         print(" OPPONENT IS A RANDOM (DUMB) PLAYER")
 
+    # --------------------------------------------------
+    # Play games
+    print(" playing ", args.num_games, " games")
     results = {}
     results['player_a_win'] = 0
     results['player_b_win'] = 0
@@ -216,18 +237,25 @@ def main():
     total_games = 0
     player_a_turn = True
 
-    res = play_ai_vs_ai_game(player_a, player_b, board, player_a_turn, verbosity)
-    total_games += 1
-    update_results_and_print_statistics(res, total_games, results)
-
-    while args.multiple_games:
-        board.reset()
-        if args.switch_turn:
-            player_a_turn = not player_a_turn
+    for _ in range(0, args.num_games):
         res = play_ai_vs_ai_game(player_a, player_b, board, player_a_turn, verbosity)
         total_games += 1
         update_results_and_print_statistics(res, total_games, results)
+        if args.switch_turn:
+            player_a_turn = not player_a_turn
+        board.reset()
 
+    # --------------------------------------------------
+    # If requested, save learned data
+    if args.savedata:
+        np.savez(args.savedata, zobrist_hash = board.zhash_table,
+                 value_tuple = player_a.values)
+        ###print(board.zhash_table)
+        ###print(player_a.values)
+
+    # --------------------------------------------------
+    # Exits
+    sys.exit(0)
 
 
 # --------------------------------------------------------------------
