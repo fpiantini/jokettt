@@ -26,7 +26,6 @@ class LearnerPlayer(Player):
     def __init__(self, piece, board, init_values={}, alpha=0.1, verbosity=0):
         """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
-        print("verbosity level = ", verbosity)
         Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
 

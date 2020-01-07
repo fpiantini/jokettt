@@ -123,7 +123,6 @@ class MinimaxPlayer(Player):
     @staticmethod
     def __move_dumb(board):
         """Do a dumb move"""
-        ###print("I'm dumb, choose random move")
         if board.is_full():
             return None, None
         while True:
