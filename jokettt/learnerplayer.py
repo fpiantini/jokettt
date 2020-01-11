@@ -14,22 +14,25 @@
         V(s) = V(s) + alpha * [ V(s') - V(s) ]
     This class is derived from the Player base class
 """
+__all__ = ['LearnerPlayer']
+
 from random import shuffle
 
-from jokettt.board import Board
-from jokettt.player import Player
+from .player import Player
 
 class LearnerPlayer(Player):
     """A Tic Tac Toe learner automatic player."""
 
     # --------------------------------------------------------------
-    def __init__(self, piece, board, init_values={}, alpha=0.1, verbosity=0):
+    # pylint: disable=too-many-arguments
+    #   --- Currently we need all these parameters, and we do not want
+    #   to break backward compatibility
+    def __init__(self, piece, board, init_values=None, alpha=0.1, verbosity=0):
         """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
-
-        self.values = init_values
+        self.values = init_values or {}
         self.__best_value = -1000
         self.__best_x = None
         self.__best_y = None
@@ -46,6 +49,7 @@ class LearnerPlayer(Player):
                 # playable board
                 self.values[zhash] = 0.5
         self.__last_zhash = zhash
+    # pylint: enable=too-many-arguments
 
     # --------------------------------------------------------------
     def move(self, board):

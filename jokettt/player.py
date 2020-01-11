@@ -11,6 +11,8 @@
     This class shall not be used directly: it shall be used as a base
     class for real players
 """
+__all__ = ['Player']
+
 from abc import ABC, abstractmethod
 
 class Player(ABC):

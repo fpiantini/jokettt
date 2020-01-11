@@ -19,11 +19,12 @@
     This player has a "dumb" mode that can be activated at any step:
     in this mode, a random move is chosen
 """
+__all__ = ['MinimaxPlayer']
+
 from copy import deepcopy
 import random
 
-from jokettt.board import Board
-from jokettt.player import Player
+from .player import Player
 
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
@@ -132,13 +133,14 @@ class MinimaxPlayer(Player):
                 return _x, _y
 
     # ----------------------------------------------------------------------------------------
-    def __do_smart_first_move_as_second(self, board):
+    @staticmethod
+    def __do_smart_first_move_as_second(board):
         if board.at_least_a_corner_busy():
             # we shall move on B2
             return 1, 1
         if board.center_is_busy():
             # we shall move in a corner
-            rnd = random.randint(0,3)
+            rnd = random.randint(0, 3)
             if rnd == 0:
                 return 0, 0
             if rnd == 1:

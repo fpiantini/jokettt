@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # --------------------------------------------------------------------
 # jokettt project, v. 0.1
 # by F. Piantini <francesco.piantini@gmail.com>
@@ -5,7 +7,6 @@
 # Tic Tac Toe Console Player class definition
 # --------------------------------------------------------------------
 # pylint: disable=too-few-public-methods
-
 """Implementation of the Console Player:
     a player that gets the moves from console. This can be used to make
     able to play an human player using a minimal command line interface.
@@ -13,8 +14,9 @@
     <row> = A, B, C and <col> = 1, 2, 3.
     This class is derived from the Player base class
 """
-from jokettt.board import Board
-from jokettt.player import Player
+__all__ = ['ConsolePlayer']
+
+from .player import Player
 
 class ConsolePlayer(Player):
     """A Tic Tac Toe console player."""

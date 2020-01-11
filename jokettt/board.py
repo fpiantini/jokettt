@@ -5,6 +5,8 @@
 # Tic Tac Toe Board class definition
 # --------------------------------------------------------------------
 """Implementation of the Board class: a board to play Tic Tac Toe game."""
+__all__ = ['Board']
+
 import sys
 import random
 
@@ -25,6 +27,7 @@ class Board:
 
         self.__first_piece = first_piece
         self.__second_piece = second_piece
+        self.__zobrist_hash = 0
         self.__init_zhash(init_zhash)
 
     # ------------------------------------------------------
@@ -67,6 +70,7 @@ class Board:
 
     # ------------------------------------------------------
     def at_least_a_corner_busy(self):
+        """Returns True if at least a corner of the board is busy"""
         return self.__board[0][0] != '_' or \
                self.__board[0][2] != '_' or \
                self.__board[2][0] != '_' or \
@@ -74,6 +78,7 @@ class Board:
 
     # ------------------------------------------------------
     def center_is_busy(self):
+        """Returns True if the center cell of the board is busy"""
         return self.__board[1][1] != '_'
 
     # ------------------------------------------------------
