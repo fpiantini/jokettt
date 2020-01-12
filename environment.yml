@@ -2,6 +2,7 @@ name: jokettt
 dependencies:
 - python=3
 - pylint
+- pytest
 - numpy
 - setuptools
 - wheel
