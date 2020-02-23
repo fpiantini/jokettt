@@ -34,7 +34,7 @@ conda env update
 
 ## Demo programs
 
-For example of simple applications that uses the jokettt classes, see the [jokettt_demo] repository.
+For example of simple applications that uses the jokettt classes, see the [jokettt_demo] and the [jokettt_tbot] repositories.
 
 ## Credits
 
@@ -47,3 +47,4 @@ For example of simple applications that uses the jokettt classes, see the [joket
 [An introduction to reinforcement learning]: https://medium.com/free-code-camp/an-introduction-to-reinforcement-learning-4339519de419
 
 [jokettt_demo]: https://github.com/fpiantini/jokettt_demo
+[jokettt_tbot]: https://github.com/fpiantini/jokettt_tbot
