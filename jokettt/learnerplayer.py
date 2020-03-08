@@ -16,7 +16,7 @@
 """
 __all__ = ['LearnerPlayer']
 
-from random import shuffle
+from random import shuffle, seed, random
 
 from .player import Player
 
@@ -27,16 +27,19 @@ class LearnerPlayer(Player):
     # pylint: disable=too-many-arguments
     #   --- Currently we need all these parameters, and we do not want
     #   to break backward compatibility
-    def __init__(self, piece, board, init_values=None, alpha=0.1, verbosity=0):
+    def __init__(self, piece, board, init_values=None, alpha=0.1, eps=0.0, verbosity=0):
         """LearnerPlayer class constructor. Save the given piece,
             the alpha value and initializes Value vector."""
         Player.__init__(self, piece, verbosity)
         self.__alpha = alpha
+        self.__eps = eps
         self.values = init_values or {}
         self.__best_value = -1000
         self.__best_x = None
         self.__best_y = None
         self.__best_zhash = -1
+        self.__exploring_move_done = False
+        seed()
         zhash, score = board.evaluate(self.piece)
         if not zhash in self.values:
             if score > 0:
@@ -55,6 +58,15 @@ class LearnerPlayer(Player):
     def move(self, board):
         """Do a move using reinforcement learning algo"""
         return self.__find_rl_move(board)
+
+    # --------------------------------------------------------------
+    def exploring_move_flag(self):
+        """Return the exploring move done flag"""
+        return self.__exploring_move_done
+    # --------------------------------------------------------------
+    def reset_exploring_move_flag(self):
+        """Reset the exploring move done flag"""
+        self.__exploring_move_done = False
 
     # --------------------------------------------------------------
     def learn_from_defeat(self, board):
@@ -89,26 +101,36 @@ class LearnerPlayer(Player):
         # the learning playing against a minimax player is slower
         shuffle(move_list)  # to add some variability to the play (...maybe)
 
-        self.__best_value = -1000
-        self.__best_x = None
-        self.__best_y = None
-        for move in move_list:
-            if self.__analyze_move(move, board):
-                # winning move found
-                break
+        _rnd = random()
+        # check if is this the moment to do exploring
+        if _rnd > self.__eps:
+            # do greedy move
+            self.__best_value = -1000
+            self.__best_x = None
+            self.__best_y = None
+            for move in move_list:
+                if self.__analyze_move(move, board):
+                    # winning move found
+                    break
 
-        # move selected... updates current zhash
-        self.values[zhash] += \
-            self.__alpha * (self.values[self.__best_zhash] - \
-                            self.values[zhash])
-        self.values[self.__last_zhash] += \
-            self.__alpha * (self.values[self.__best_zhash] - \
-                            self.values[self.__last_zhash])
+            # move selected... updates current zhash
+            self.values[zhash] += \
+                self.__alpha * (self.values[self.__best_zhash] - \
+                                self.values[zhash])
+            self.values[self.__last_zhash] += \
+                self.__alpha * (self.values[self.__best_zhash] - \
+                                self.values[self.__last_zhash])
 
-        self.log_info("Position value updated. New value = ", self.values[zhash])
+            self.log_info("Position value updated. New value = ", self.values[zhash])
 
-        self.__last_zhash = self.__best_zhash
-        return self.__best_x, self.__best_y
+            self.__last_zhash = self.__best_zhash
+            return self.__best_x, self.__best_y
+
+        # if here we are doing an exploring move,
+        # just returns the first of the (already shuffled) list
+        self.log_info(f"Doing exploring move. Selected move is {move_list[0]}")
+        self.__exploring_move_done = True
+        return move_list[0]
 
     # --------------------------------------------------------------
     def __analyze_move(self, move, board):
